@@ -8,18 +8,19 @@
 	
 	<install for="2.0 - 2.0.99">
 		<readme type="file" parsebbc="true">readme.txt</readme>
-		<modification>modification.xml</modification>
-		<database>install.php</database>
-		<require-file name="CustomReport.english.php" destination="$languagedir" />
-		<require-file name="CustomReport.php" destination="$sourcedir" />
+		<require-dir name="Themes" destination="$boarddir">Theme files</require-dir>
+		<require-dir name="Sources/LikePosts" destination="$sourcedir">Source files</require-dir>
+		<database>installer/install.php</database>
+		<code>installer/installHooks.php</code>
+		<modification>installer/Modification.xml</modification>
 		<redirect url="?action=admin;area=manageboards;sa=settings" type="inline">Please stand by while you are being redirected to this modification's configuration settings.</redirect>
 	</install>
 
 	<uninstall for="2.0 - 2.0.99">
-		<code>uninstall.php</code>
-		<modification reverse="true">modification.xml</modification>
+		<code>installer/uninstall.php</code>
 		<remove-file name="$sourcedir/CustomReport.php" />
 		<remove-file name="$languagedir/CustomReport.english.php" />
+		<modification reverse="true">installer/Modification.xml</modification>
 		<redirect url="$scripturl?action=admin;area=packages;sa=browse" timeout="1000" />		
 	</uninstall>
 </package-info>
