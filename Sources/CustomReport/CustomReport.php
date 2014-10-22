@@ -37,6 +37,9 @@ if (!defined('SMF'))
 class CustomReport {
 	protected static $instance;
 
+	public static $CustomReportAdmin;
+	public static $CustomReportRouter;
+
 	public static $sourceFolder = '/CustomReport/';
 
 	/**
@@ -69,23 +72,30 @@ class CustomReport {
 				}
 				break;
 
+			case 'CustomReportRouter':
+				if (self::$CustomReportRouter === null) {
+					require_once ($sourcedir . self::$sourceFolder . '/' . $className . '.php');
+					self::$CustomReportRouter = new CustomReportRouter();
+				}
+				break;
+
 			default:
 				break;
 		}
 	}
 
 	public static function addActionContext(&$actions) {
-		self::loadClass('LikePostsRouter');
-		$actions['report_solved'] = array(self::$sourceFolder . 'LikePostsRouter.php', 'LikePostsRouter::ReportSolved');
+		self::loadClass('CustomReportRouter');
+		$actions['report_solved'] = array(self::$sourceFolder . 'CustomReportRouter.php', 'CustomReportRouter::ReportSolved');
 	}
 
 	public static function addAdminPanel(&$admin_areas) {
 		global $txt;
 
-		$admin_areas['config']['areas']['likeposts'] = array(
-			'label' => $txt['lp_menu'],
-			'file' => '/LikePosts/LikePostsRouter.php',
-			'function' => 'routeLikePostsAdmin',
+		$admin_areas['config']['areas']['customreport'] = array(
+			'label' => $txt['cr_admin_menu'],
+			'file' => '/LikePosts/CustomReportRouter.php',
+			'function' => 'routeCustomReportAdmin',
 			'icon' => 'administration.gif',
 			'subsections' => array(),
 		);
@@ -102,6 +112,15 @@ class CustomReport {
 			$context['non_guest_permissions'],
 			array('can_solve_report')
 		);
+	}
+
+	public static function customReportOb(&$buffer) {
+		global $modSettings, $context;
+
+		if (!empty($modSettings['report_board']) && !empty($modSettings['enable_large_report_field'])) {
+			$buffer = preg_replace('~(' . preg_quote('<input type="text" id="report_comment" name="comment" size="50" value="" maxlength="255" />') . ')~', '<textarea id="report_comment" name="comment" cols="60" rows="6" tabindex="'. $context['tabindex']++ . '" value=""></textarea>', $buffer);
+		}
+		return $buffer;
 	}
 }
 CustomReport::getInstance();

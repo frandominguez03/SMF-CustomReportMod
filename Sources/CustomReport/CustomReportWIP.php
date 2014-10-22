@@ -33,18 +33,6 @@
 if (!defined('SMF'))
 	die('Hacking attempt...');
 
-// Meh, change the text field size for people writing articles in reports
-function customReportOb(&$buffer)
-{
-	global $txt, $modSettings, $context;
-
-	if (!empty($modSettings['report_board']) && !empty($modSettings['enable_large_report_field']))
-	{
-		$buffer = preg_replace('~(' . preg_quote('<input type="text" id="report_comment" name="comment" size="50" value="" maxlength="255" />') . ')~', '<textarea id="report_comment" name="comment" cols="60" rows="6" tabindex="'. $context['tabindex']++ . '" value=""></textarea>', $buffer);
-	}
-	return $buffer;
-}
-
 // Here comes the daddy to take care of things :D
 function CustomReportToModerator2()
 {
