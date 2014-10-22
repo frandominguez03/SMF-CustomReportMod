@@ -49,7 +49,7 @@ class CustomReportRouter {
 	public function __construct() {}
 
 	public static function reportSolved() {
-		global $topic;
+		global $topic, $sourcedir;
 
 		// Make all the checks
 		isAllowedTo('can_solve_report');
