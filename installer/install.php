@@ -97,11 +97,6 @@ $tables = array(
 foreach ($tables as $table => $data)
 	$smcFunc['db_create_table']('{db_prefix}' . $table, $data['columns'], $data['indexes']);
 
-add_integration_function('integrate_pre_include', '$sourcedir/CustomReport.php');
-add_integration_function('integrate_actions', 'SolveAction');
-add_integration_function('integrate_load_permissions', 'CustomReportPermissions');
-add_integration_function('integrate_buffer', 'custom_report_ob');
-
 if (SMF == 'SSI')
 	echo 'Database adaptation successful!';
 
