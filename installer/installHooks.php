@@ -42,7 +42,7 @@ add_integration_function('integrate_pre_include', '$sourcedir/CustomReport/Custo
 add_integration_function('integrate_actions', 'CustomReport::addActionContext', true);
 add_integration_function('integrate_admin_areas', 'CustomReport::addAdminPanel');
 
-add_integration_function('integrate_load_permissions', 'CustomReport::loadPermissions');
+// add_integration_function('integrate_load_permissions', 'CustomReport::loadPermissions');
 add_integration_function('integrate_buffer', 'CustomReport::customReportOb');
 
 ?>

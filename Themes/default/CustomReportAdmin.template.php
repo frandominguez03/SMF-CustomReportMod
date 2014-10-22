@@ -106,7 +106,7 @@ function template_cr_admin_general_settings() {
 
 								case 'select':
 									echo '
-									<select name="', $config_var['name'], '" id="', $config_var['name'], '" ', $javascript, $disabled, (!empty($config_var['multiple']) ? ' multiple="multiple"' : ''), '>';
+									<select name="', $config_var['name'], '" id="', $config_var['name'], '">';
 
 									foreach ($config_var['data'] as $option) {
 										echo '
