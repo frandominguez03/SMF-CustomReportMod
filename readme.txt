@@ -43,3 +43,9 @@ When a moderator clicks [Report Unsolved] button the report topic will be unlock
 
 
 All future ideas for this mod are most welcome, please post them in mod support thread.
+
+[b]License[/b]
+ * This SMF Modification is subject to the Mozilla Public License Version
+ * 1.1 (the "License"); you may not use this SMF modification except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.mozilla.org/MPL/
