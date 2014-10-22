@@ -43,6 +43,40 @@ function routeCustomReportAdmin() {
 
 	CustomReport::loadClass('CustomReportDB');
 	CustomReport::loadClass('CustomReportAdmin');
+	loadtemplate('CustomReportAdmin');
+
+	$context['page_title'] = $txt['cr_admin_panel'];
+	$defaultActionFunc = 'generalSettings';
+
+	// Load tabs menu, text etc for the admin panel
+	$context[$context['admin_menu_name']]['tab_data'] = array(
+		'title' => $txt['cr_admin_panel'],
+		'tabs' => array(
+			'generalsettings' => array(
+				'label' => $txt['cr_general_settings'],
+				'url' => 'generalsettings',
+			),
+			'permissions' => array(
+				'label' => $txt['cr_permission_settings'],
+				'url' => 'permissionsettings',
+			)
+		),
+	);
+	$context[$context['admin_menu_name']]['tab_data']['active_button'] = isset($_REQUEST['sa']) ? $_REQUEST['sa'] : 'generalsettings';
+
+	$subActions = array(
+		'generalsettings' => 'generalSettings',
+		'savegeneralsettings' => 'saveGeneralSettings',
+		'permissionsettings' => 'permissionSettings',
+		'savepermissionsettings' => 'savePermissionsettings'
+	);
+
+	//wakey wakey, call the func you lazy
+	if (isset($_REQUEST['sa']) && isset($subActions[$_REQUEST['sa']]) && method_exists(CustomReport::$CustomReportAdmin, $subActions[$_REQUEST['sa']]))
+		return CustomReport::$CustomReportAdmin->$subActions[$_REQUEST['sa']]();
+
+	// At this point we can just do our default.
+	CustomReport::$CustomReportAdmin->$defaultActionFunc();
 }
 
 class CustomReportRouter {

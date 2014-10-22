@@ -86,6 +86,28 @@ class CustomReportDB {
 			)
 		);
 	}
+
+	public function reportBoardsOptions() {
+		global $smcFunc, $modSettings;
+
+		$report_boards = array();
+		$request = $smcFunc['db_query']('order_by_board_order', '
+			SELECT b.id_board, b.name AS board_name, c.name AS cat_name
+			FROM {db_prefix}boards AS b
+				LEFT JOIN {db_prefix}categories AS c ON (c.id_cat = b.id_cat)
+			WHERE redirect = {string:empty_string}' . (!empty($modSettings['recycle_enable']) && $modSettings['recycle_board'] > 0 ? '
+			AND b.id_board != {int:recycle_board_id}' : ''),
+			array(
+				'empty_string' => '',
+				'recycle_board_id' => $modSettings['recycle_board'],
+			)
+		);
+		while ($row = $smcFunc['db_fetch_assoc']($request))
+			$report_boards[$row['id_board']] = $row['cat_name'] . ' - ' . $row['board_name'];
+
+		$smcFunc['db_free_result']($request);
+		return $report_boards;
+	}
 }
 
 ?>
