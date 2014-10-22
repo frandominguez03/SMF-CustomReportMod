@@ -55,6 +55,36 @@ class CustomReportDB {
 		);
 		$message = $smcFunc['db_fetch_assoc']($request);
 		$smcFunc['db_free_result']($request);
+
+		return $message;
+	}
+
+	public function unlockTopic($topicId) {
+		global $smcFunc;
+
+		$request = $smcFunc['db_query']('', '
+			UPDATE {db_prefix}topics
+			SET locked = {int:locked}
+			WHERE id_topic = {int:topic}',
+			array(
+				'locked' => 0,
+				'topic' => $topicId,
+			)
+		);
+	}
+
+	public function setSolveStatus($status) {
+		global $smcFunc;
+
+		$request = $smcFunc['db_query']('', '
+			UPDATE {db_prefix}custom_report_mod
+			SET solved = {int:is_solved}
+			WHERE id_report_topic = {int:topic}',
+			array(
+				'is_solved' => $status,
+				'topic' => $topic,
+			)
+		);
 	}
 }
 

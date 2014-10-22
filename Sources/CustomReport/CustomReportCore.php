@@ -40,12 +40,7 @@ class CustomReportCore {
 	public function reportSolved($topicId) {
 		global $txt, $board_info, $user_info, $modSettings;
 
-		if(!isset($topicId) || empty($topicId)) {
-			// Back to the post we reported!
-			redirectexit('topic=' . $topic . '.0');
-		}
 		$result = CustomReport::$CustomReportDB->checkIsTopicSolved($topicId);
-
 		if(empty($result['solved'])) {
 			$subject = '[' .$txt['report_solved'] . ']'. ' ' . $result['subject'];
 			$body = $txt['report_solved'] . ' ' . $txt['by'] . ' ' . '\''. $user_info['name'] . '\'';
@@ -66,26 +61,9 @@ class CustomReportCore {
 			);
 			createPost($msgOptions, $topicOptions, $posterOptions);
 		} else {
-			$request = $smcFunc['db_query']('', '
-				UPDATE {db_prefix}topics
-				SET locked = {int:locked}
-				WHERE id_topic = {int:topic}',
-				array(
-					'locked' => 0,
-					'topic' => $topic,
-				)
-			);
+			CustomReport::$CustomReportDB->unlockTopic($topicId);
 		}
-
-		$request = $smcFunc['db_query']('', '
-			UPDATE {db_prefix}custom_report_mod
-			SET solved = {int:is_solved}
-			WHERE id_report_topic = {int:topic}',
-			array(
-				'topic' => $topic,
-				'is_solved' => empty($result['solved']) ? 1 : 0,
-			)
-		);
+		CustomReport::$CustomReportDB->setSolveStatus(empty($result['solved']) ? 1 : 0);
 	}
 }
 
