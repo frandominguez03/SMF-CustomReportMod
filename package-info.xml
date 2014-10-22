@@ -9,7 +9,7 @@
 	<install for="2.0 - 2.0.99">
 		<readme type="file" parsebbc="true">readme.txt</readme>
 		<require-dir name="Themes" destination="$boarddir">Theme files</require-dir>
-		<require-dir name="Sources" destination="$boarddir">Source files</require-dir>
+		<require-dir name="Sources/CustomReport" destination="$sourcedir">Source files</require-dir>
 		<database>installer/install.php</database>
 		<code>installer/installHooks.php</code>
 		<modification>installer/Modification.xml</modification>
