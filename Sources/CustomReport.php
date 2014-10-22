@@ -41,7 +41,7 @@ function SolveAction(&$actions)
 }
 
 // Load the permissions for the mod
-function CustomReportPermissions(&$permissionGroups, &$permissionList)
+function loadPermissions(&$permissionGroups, &$permissionList)
 {
 	global $context;
 
@@ -57,7 +57,7 @@ function CustomReportPermissions(&$permissionGroups, &$permissionList)
 }
 
 // Meh, change the text field size for people writing articles in reports
-function custom_report_ob(&$buffer)
+function customReportOb(&$buffer)
 {
 	global $txt, $modSettings, $context;
 
