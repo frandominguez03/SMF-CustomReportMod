@@ -90,7 +90,7 @@ class CustomReportDB {
 	public function reportBoardsOptions() {
 		global $smcFunc, $modSettings;
 
-		$report_boards = array();
+		$reportBoards = array();
 		$request = $smcFunc['db_query']('order_by_board_order', '
 			SELECT b.id_board, b.name AS board_name, c.name AS cat_name
 			FROM {db_prefix}boards AS b
@@ -103,10 +103,10 @@ class CustomReportDB {
 			)
 		);
 		while ($row = $smcFunc['db_fetch_assoc']($request))
-			$report_boards[$row['id_board']] = $row['cat_name'] . ' - ' . $row['board_name'];
+			$reportBoards[$row['id_board']] = $row['cat_name'] . ' - ' . $row['board_name'];
 
 		$smcFunc['db_free_result']($request);
-		return $report_boards;
+		return $reportBoards;
 	}
 }
 

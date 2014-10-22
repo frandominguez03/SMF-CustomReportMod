@@ -19,6 +19,7 @@
 	<uninstall for="2.0 - 2.0.99">
 		<code>installer/uninstall.php</code>
 		<remove-dir name="$sourcedir/CustomReport" />
+		<remove-file name="$themedir/CustomReportAdmin.template.php" />
 		<remove-file name="$languagedir/CustomReport.english.php" />
 		<modification reverse="true">installer/Modification.xml</modification>
 		<redirect url="$scripturl?action=admin;area=packages;sa=browse" timeout="1000" />		

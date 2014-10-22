@@ -54,10 +54,13 @@ $txt['cr_rtm_noboard'] = 'Admin forgot to create the report board.';
 $txt['cr_permissionname_can_solve_report'] = 'Can mark reports as solved';
 $txt['cr_permissionhelp_can_solve_report'] = 'This will allow user to mark the reports as solved.';
 
-$txt['cr_admin_panel'] = 'Like Posts admin panel';
+$txt['cr_admin_panel_title'] = 'Custom report';
+$txt['cr_admin_panel'] = 'Custom report mod admin panel';
 $txt['cr_general_settings'] = 'General Settings';
 $txt['cr_general_settings_desc'] = 'You can make all global settings for custom reports mod from here.';
 $txt['cr_permission_settings'] = 'Permission Settings';
 $txt['cr_permission_settings_desc'] = 'You can make all group based permission settings for custom reports mod from here.';
+
+$txt['cr_submit'] = 'Submit';
 
 ?>

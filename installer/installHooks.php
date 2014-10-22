@@ -37,7 +37,7 @@ if (file_exists(dirname(__FILE__) . '/SSI.php') && !defined('SMF')) {
 }
 
 // Add hooks and plugin the mod
-add_integration_function('integrate_pre_include', '$sourcedir/CustomReport.php');
+add_integration_function('integrate_pre_include', '$sourcedir/CustomReport/CustomReport.php');
 
 add_integration_function('integrate_actions', 'CustomReport::addActionContext', true);
 add_integration_function('integrate_admin_areas', 'CustomReport::addAdminPanel');

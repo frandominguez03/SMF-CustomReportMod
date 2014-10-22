@@ -109,7 +109,7 @@ class CustomReport {
 		global $txt;
 
 		$admin_areas['config']['areas']['customreport'] = array(
-			'label' => $txt['cr_admin_menu'],
+			'label' => $txt['cr_admin_panel_title'],
 			'file' => '/CustomReport/CustomReportRouter.php',
 			'function' => 'routeCustomReportAdmin',
 			'icon' => 'administration.gif',
