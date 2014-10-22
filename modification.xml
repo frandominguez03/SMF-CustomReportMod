@@ -1,0 +1,555 @@
+<?xml version="1.0"?>
+<!DOCTYPE modification SYSTEM "http://www.simplemachines.org/xml/modification">
+<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+	Package manifest file for Custom Report Mod
+
+	Author - Joker (http://www.simplemachines.org/community/index.php?action=profile;u=226111)
+	License - http://creativecommons.org/licenses/by-sa/3.0/ CC BY-SA 3.0
+	
+	Version - 1.3
+ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+<modification xmlns="http://www.simplemachines.org/xml/modification" xmlns:smf="http://www.simplemachines.org/">
+	<id>sid2varun:customreportmod</id>
+	<version>1.3</version>
+
+	<file name="$boarddir/index.php">
+
+		<operation>
+			<search position="before"><![CDATA[
+		'reporttm' => array('SendTopic.php', 'ReportToModerator'),]]></search>
+			<add><![CDATA[
+		'report_solved' => array('SendTopic.php', 'ReportSolved'),]]></add>
+		</operation>
+
+	</file>
+	
+	<file name="$sourcedir/Display.php">
+
+		<operation>
+			<search position="replace"><![CDATA[			t.id_member_started, t.id_first_msg, t.id_last_msg, t.approved, t.unapproved_posts,
+]]></search>
+			<add><![CDATA[			t.id_member_started, t.id_first_msg, t.id_last_msg, t.approved, t.unapproved_posts, c.solved,
+]]></add>
+		</operation>
+		<operation>
+			<search position="replace"><![CDATA[			INNER JOIN {db_prefix}messages AS ms ON (ms.id_msg = t.id_first_msg)' . ($user_info['is_guest'] ? '' : '
+]]></search>
+			<add><![CDATA[			INNER JOIN {db_prefix}messages AS ms ON (ms.id_msg = t.id_first_msg)
+			LEFT JOIN {db_prefix}custom_report_mod as c ON (c.id_report_topic = {int:current_topic})' . ($user_info['is_guest'] ? '' : '
+]]></add>
+		</operation>
+		<operation>
+			<search position="before"><![CDATA[	$context['topic_last_message'] = $topicinfo['id_last_msg'];
+]]></search>
+			<add><![CDATA[	$context['report_solved'] = $topicinfo['solved'];
+]]></add>
+		</operation>
+
+	</file>
+	
+	<file name="$sourcedir/SendTopic.php">
+	
+		<operation>
+			<search position="before"><![CDATA[	void ReportToModerator2()
+		- sends off emails to all the moderators.
+		- sends to administrators and global moderators. (1 and 2)
+		- called by ReportToModerator(), and thus has the same permission
+		  and setting requirements as it does.
+		- accessed through ?action=reporttm when posting.]]></search>
+			<add><![CDATA[
+	void CustomReportToModerator2()
+		- creates a topic in specified board when a post is reported.
+		- called by ReportToModerator(), and thus has the same permission
+		  and setting requirements as it does.
+		- accessed through ?action=reporttm when posting.
+		- whole function can be disabled using the settings available in admin panel.]]></add>
+		</operation>
+		
+		
+		<operation>
+			<search position="replace"><![CDATA[	if ((isset($_POST[$context['session_var']]) || isset($_POST['submit'])) && empty($context['post_errors']))
+		ReportToModerator2();]]></search>
+			<add><![CDATA[	if ((isset($_POST[$context['session_var']]) || isset($_POST['submit'])) && empty($context['post_errors']) && !empty($modSettings['report_board']))
+		CustomReportToModerator2();	
+	
+	elseif ((isset($_POST[$context['session_var']]) || isset($_POST['submit'])) && empty($context['post_errors']))
+		ReportToModerator2();]]></add>
+		</operation>		
+		
+		
+		<operation>
+			<search position="before"><![CDATA[	$context['comment_body'] = !isset($_POST['comment']) ? '' : trim($_POST['comment']);
+	$context['email_address'] = !isset($_POST['email']) ? '' : trim($_POST['email']);]]></search>
+			<add><![CDATA[	
+	// Ask the name from guests if custom report mod is enabled.
+	if(!empty($modSettings['report_board']))
+	$context['guestname'] = !isset($_POST['guestname']) ? '' : trim($_POST['guestname']);]]></add>
+		</operation>
+		
+		
+		<operation>
+			<search position="end"></search>
+			<add><![CDATA[
+
+function CustomReportToModerator2()
+{
+
+	global $txt, $scripturl, $topic, $board_info, $user_info, $modSettings, $sourcedir, $smcFunc, $context;
+
+	// You must have the proper permissions!
+	isAllowedTo('report_any');
+
+	loadLanguage('Post');	
+	
+	// Make sure they aren't spamming.
+	spamProtection('reporttm');
+
+	require_once($sourcedir . '/Subs-Post.php');
+	
+	if(empty($modSettings['report_board_id']))
+	fatal_lang_error('rtm_noboard');
+
+	// No errors, yet.
+	$post_errors = array();
+
+	// Check their session.
+	if (checkSession('post', '', false) != '')
+	$post_errors[] = 'session_timeout';
+		
+
+	// Make sure we have a comment and it's clean.
+	if (!isset($_POST['comment']) || $smcFunc['htmltrim']($_POST['comment']) === '')
+		$post_errors[] = 'no_comment';
+	$poster_comment = $smcFunc['htmlspecialchars']($_POST['comment'], ENT_QUOTES);
+		
+	// Guests need to provide their name and email address!
+	if ($user_info['is_guest'])
+	{
+		$_POST['guestname'] = !isset($_POST['guestname']) ? '' : trim($_POST['guestname']);
+		$_POST['email'] = !isset($_POST['email']) ? '' : trim($_POST['email']);
+		
+		// Validate the name.
+		if (!isset($_POST['guestname']) || trim(strtr($_POST['guestname'], '_', ' ')) == '')
+			$post_errors[] = 'no_name';
+		elseif ($smcFunc['strlen']($_POST['guestname']) > 25)
+			$post_errors[] = 'long_name';
+		else
+		{
+			require_once($sourcedir . '/Subs-Members.php');
+			if (isReservedName(htmlspecialchars($_POST['guestname']), 0, true, false))
+				$post_errors[] = 'bad_name';
+		}
+		
+		// Validate the email.
+		if ($_POST['email'] === '')
+			$post_errors[] = 'no_email';
+		elseif (preg_match('~^[0-9A-Za-z=_+\-/][0-9A-Za-z=_\'+\-/\.]*@[\w\-]+(\.[\w\-]+)*(\.[\w]{2,6})$~', $_POST['email']) == 0)
+			$post_errors[] = 'bad_email';
+
+		isBannedEmail($_POST['email'], 'cannot_post', sprintf($txt['you_are_post_banned'], $txt['guest_title']));
+
+		$user_info['email'] = htmlspecialchars($_POST['email']);
+	}
+	
+	// Could they get the right verification code?
+	if ($user_info['is_guest'] && !empty($modSettings['guests_report_require_captcha']))
+	{
+		require_once($sourcedir . '/Subs-Editor.php');
+		$verificationOptions = array(
+			'id' => 'report',
+		);
+		$context['require_verification'] = create_control_verification($verificationOptions, true);
+		if (is_array($context['require_verification']))
+			$post_errors = array_merge($post_errors, $context['require_verification']);
+	}
+
+	// Any errors?
+	if (!empty($post_errors))
+	{
+		loadLanguage('Errors');
+
+		$context['post_errors'] = array();
+		foreach ($post_errors as $post_error)
+			$context['post_errors'][] = $txt['error_' . $post_error];
+
+		return ReportToModerator();
+	}
+	
+	// Get the basic topic information, and make sure they can see it.
+	$_POST['msg'] = (int) $_POST['msg'];
+
+	$request = $smcFunc['db_query']('', '
+		SELECT m.id_topic, m.subject, m.body, m.id_member AS id_poster, m.poster_name, mem.real_name, m.poster_time
+		FROM {db_prefix}messages AS m
+			LEFT JOIN {db_prefix}members AS mem ON (m.id_member = mem.id_member)
+		WHERE m.id_msg = {int:id_msg}
+			AND m.id_topic = {int:current_topic}
+		LIMIT 1',
+		array(
+			'current_topic' => $topic,
+			'id_msg' => $_POST['msg'],
+		)
+	);
+	if ($smcFunc['db_num_rows']($request) == 0)
+		fatal_lang_error('no_board', false);
+	$message = $smcFunc['db_fetch_assoc']($request);
+	$smcFunc['db_free_result']($request);
+
+	
+	$request = $smcFunc['db_query']('', '
+		SELECT c.id_report_topic, c.id_msg, c.id_topic
+		FROM {db_prefix}custom_report_mod AS c
+		WHERE c.id_msg = {int:id_msg}
+		AND c.id_topic = {int:current_topic}
+		LIMIT 1',
+		array(
+			'id_msg' => $_POST['msg'],
+			'current_topic' => $topic,
+		)
+	);
+	if ($smcFunc['db_num_rows']($request) > 0)
+		list ($context['report_mod']['id_report_topic'], $context['report_mod']['id_msg'], $context['report_mod']['id_topic']) = $smcFunc['db_fetch_row']($request);
+	$smcFunc['db_free_result']($request);
+	
+	// Get the poster and reporter names
+	$poster_name = un_htmlspecialchars($message['real_name']);
+	$reporterName = un_htmlspecialchars(!$user_info['is_guest'] ? $user_info['name'] : $_POST['guestname']);
+
+	//Content for report post in the report board.
+	$subject = $txt['reported_post'] . ' : ' . $message['subject'];
+	
+	$body = $txt['post_report_board'] . ' : ' . $reporterName . '<br /><br />' .
+		$txt['post_made_by'] . ' : ' . $message['real_name'] . ' ' . $txt['at'] . ' ' . timeformat($message['poster_time']) . '<br /><br />' .
+		(!empty($modSettings['quote_reported_post']) ? '[quote author=' . $poster_name . ' link=topic=' . $topic . '.msg' . $_POST['msg'] . '#msg' . $_POST['msg'] . ' date=' . $message['poster_time'] . ']' . "\n" . rtrim($message['body']) . "\n" . '[/quote]' :
+		'<a href="'. $scripturl .  '?topic=' . $topic . '.msg' . $_POST['msg'] . '#msg' . $_POST['msg'] .'" target="_blank">' . $txt['post_link'] . '</a><br /><br />') .
+		'<br />' . $txt['report_comment'] . ' : ' . '<br />' .
+		$poster_comment;
+	
+	preparsecode($body);
+
+	// set up all options
+	$msgOptions = array(
+		'id' => 0,
+		'subject' => $subject,
+		'body' => $body,
+		'icon' => 'xx',
+		'smileys_enabled' => true,
+		'attachments' => array(),
+		'approved' => true,
+	);
+	$topicOptions = array(
+		'id' => empty($context['report_mod']['id_report_topic']) ? 0 : $context['report_mod']['id_report_topic'],
+		'board' => $modSettings['report_board_id'],
+		'poll' => null,
+		'lock_mode' => 0,
+		'sticky_mode' => null,
+		'mark_as_read' => false,
+		'is_approved' => true
+	);
+	$posterOptions = array(
+		'id' => $user_info['id'],
+		'name' => $reporterName,
+		'email' => $user_info['email'],
+		'update_post_count' => !$user_info['is_guest'] && !empty($modSettings['enable_report_count']) && $board_info['posts_count'],
+	);
+	
+	// And at last make a post, yeyy :P!
+	createPost($msgOptions, $topicOptions, $posterOptions);
+
+	if(empty($context['report_mod']['id_msg']))
+	{
+		$smcFunc['db_insert']('',
+		'{db_prefix}custom_report_mod',
+			array(
+				'id_report_topic' => 'int', 'id_msg' => 'int', 'id_topic' => 'int',
+			),
+			array(
+				$topicOptions['id'], $_POST['msg'], $topic,
+			),
+		array('')
+		);
+	}
+	
+	// Back to the post we reported!
+	redirectexit('reportsent;topic=' . $topic . '.msg' . $_POST['msg'] . '#msg' . $_POST['msg']);
+}
+
+function ReportSolved()
+{
+	global $txt, $board_info, $topic, $user_info, $modSettings, $sourcedir, $context, $smcFunc;
+	
+	loadLanguage('Post');	
+	require_once($sourcedir . '/Subs-Post.php');
+
+	isAllowedTo('can_solve_report');
+
+	// Check their session.
+	if (checkSession('post', '', false) != '')
+	$post_errors[] = 'session_timeout';
+		
+	// I don't like double replies :P.
+	checkSubmitOnce('check');
+
+	// No errors, yet.
+	$post_errors = array();
+	
+	$request = $smcFunc['db_query']('', '
+		SELECT t.id_topic, t.id_first_msg, m.subject, c.solved
+		FROM {db_prefix}topics AS t
+		INNER JOIN {db_prefix}messages AS m ON (m.id_msg = t.id_first_msg)
+		INNER JOIN {db_prefix}custom_report_mod AS c ON (c.id_report_topic = t.id_topic)
+		WHERE t.id_topic = {int:current_topic}
+		LIMIT 1',
+		array(
+			'current_topic' => $topic,
+		)
+	);
+	$message = $smcFunc['db_fetch_assoc']($request);
+	$smcFunc['db_free_result']($request);
+
+	if(empty($message['solved']))
+	{
+		$subject = '[' .$txt['report_solved'] . ']'. ' ' . $message['subject'];
+		$body = $txt['report_solved'] . ' ' . $txt['by'] . ' ' . '\''. $user_info['name'] . '\'';
+
+		$msgOptions = array(
+			'subject' => $subject,
+			'body' => $body,
+		);
+		$topicOptions = array(
+			'id' => $topic,
+			'board' => $modSettings['report_board_id'],
+			'lock_mode' => 1,
+			'mark_as_read' => true,
+		);
+		$posterOptions = array(
+			'id' => $user_info['id'],
+			'update_post_count' => !empty($modSettings['enable_report_mod_count']) && $board_info['posts_count'],
+		);
+		
+		createPost($msgOptions, $topicOptions, $posterOptions);
+	}
+	
+	else
+	{
+	$request = $smcFunc['db_query']('', '
+		UPDATE {db_prefix}topics
+		SET locked = {int:locked}
+		WHERE id_topic = {int:topic}',
+			array(
+				'locked' => 0,
+				'topic' => $topic,
+			)
+		);
+	}
+	
+	$request = $smcFunc['db_query']('', '
+		UPDATE {db_prefix}custom_report_mod
+		SET solved = {int:is_solved}
+		WHERE id_report_topic = {int:topic}',
+		array(
+			'topic' => $topic,
+			'is_solved' => empty($message['solved']) ? 1 : 0,
+		)
+	);
+
+	// Back to the post we reported!
+	redirectexit('topic=' . $topic . '.0');
+}
+]]></add>
+		</operation>		
+	</file>
+
+
+	<file name="$sourcedir/ManageBoards.php">
+		<operation>
+			<search position="replace"><![CDATA[	$recycle_boards = array('');
+	$request = $smcFunc['db_query']('order_by_board_order', '
+		SELECT b.id_board, b.name AS board_name, c.name AS cat_name
+		FROM {db_prefix}boards AS b
+			LEFT JOIN {db_prefix}categories AS c ON (c.id_cat = b.id_cat)
+		WHERE redirect = {string:empty_string}',
+		array(
+			'empty_string' => '',
+		)
+	);
+	while ($row = $smcFunc['db_fetch_assoc']($request))
+		$recycle_boards[$row['id_board']] = $row['cat_name'] . ' - ' . $row['board_name'];
+	$smcFunc['db_free_result']($request);]]></search>
+			<add><![CDATA[	$recycle_boards = array('');
+	$request = $smcFunc['db_query']('order_by_board_order', '
+		SELECT b.id_board, b.name AS board_name, c.name AS cat_name
+		FROM {db_prefix}boards AS b
+			LEFT JOIN {db_prefix}categories AS c ON (c.id_cat = b.id_cat)
+		WHERE redirect = {string:empty_string}' . (!empty($modSettings['report_board']) && $modSettings['report_board_id'] > 0 ? '
+		AND b.id_board != {int:report_board_id}' : ''),
+		array(
+			'empty_string' => '',
+			'report_board_id' => $modSettings['report_board_id'],
+		)
+	);
+	while ($row = $smcFunc['db_fetch_assoc']($request))
+		$recycle_boards[$row['id_board']] = $row['cat_name'] . ' - ' . $row['board_name'];
+	$smcFunc['db_free_result']($request);
+	
+	$report_boards = array('');
+	$request = $smcFunc['db_query']('order_by_board_order', '
+		SELECT b.id_board, b.name AS board_name, c.name AS cat_name
+		FROM {db_prefix}boards AS b
+			LEFT JOIN {db_prefix}categories AS c ON (c.id_cat = b.id_cat)
+		WHERE redirect = {string:empty_string}' . (!empty($modSettings['recycle_enable']) && $modSettings['recycle_board'] > 0 ? '
+		AND b.id_board != {int:recycle_board_id}' : ''),
+		array(
+			'empty_string' => '',
+			'recycle_board_id' => $modSettings['recycle_board'],
+		)
+	);
+	while ($row = $smcFunc['db_fetch_assoc']($request))
+		$report_boards[$row['id_board']] = $row['cat_name'] . ' - ' . $row['board_name'];
+	$smcFunc['db_free_result']($request);
+]]></add>
+		</operation>
+		<operation>
+			<search position="replace"><![CDATA[			// Other board settings.
+			array('check', 'countChildPosts'),
+			array('check', 'recycle_enable', 'onclick' => 'document.getElementById(\'recycle_board\').disabled = !this.checked;'),
+			array('select', 'recycle_board', $recycle_boards),
+			array('check', 'allow_ignore_boards'),]]></search>
+			<add><![CDATA[			// Other board settings.
+			array('check', 'countChildPosts'),
+			array('check', 'recycle_enable', 'onclick' => 'document.getElementById(\'recycle_board\').disabled = !this.checked;'),
+			array('select', 'recycle_board', $recycle_boards),
+			array('check', 'allow_ignore_boards'),
+			'',
+			array('check', 'report_board', 'onclick' => 'document.getElementById(\'report_board_id\').disabled = !this.checked;'),
+			array('select', 'report_board_id', $report_boards),
+			array('check', 'quote_reported_post', 'subtext' => $txt['quote_reported_post_info']),
+			array('check', 'enable_report_count', 'subtext' => $txt['enable_report_count_info']),
+			array('check', 'enable_report_mod_count', 'subtext' => $txt['enable_report_mod_count_info']),]]></add>
+		</operation>
+		<operation>
+			<search position="before"><![CDATA[			document.getElementById("recycle_board").disabled = !document.getElementById("recycle_enable").checked;
+]]></search>
+			<add><![CDATA[			document.getElementById("report_board_id").disabled = !document.getElementById("report_board").checked;
+]]></add>
+		</operation>
+	</file>
+	
+	
+	<file name="$sourcedir/ManagePermissions.php">
+		<operation>
+			<search position="before"><![CDATA[	$groupLevels['global']['moderator'] = array_merge($groupLevels['global']['standard'], array(
+		'calendar_post',
+		'calendar_edit_own',
+		'access_mod_center',
+		'issue_warning',]]></search>
+			<add><![CDATA[
+		'can_solve_report',]]></add>
+		</operation>		
+		
+		<operation>
+			<search position="before"><![CDATA[			'issue_warning' => array(false, 'member_admin', 'moderate_general'),]]></search>
+			<add><![CDATA[
+			'can_solve_report' => array(false, 'member_admin', 'moderate_general'),]]></add>
+		</operation>		
+		
+		<operation>
+			<search position="before"><![CDATA[		'admin_forum',
+		'manage_boards',
+		'manage_attachments',
+		'manage_smileys',
+		'edit_news',
+		'access_mod_center',
+		'moderate_forum',
+		'issue_warning',]]></search>
+			<add><![CDATA[
+		'can_solve_report',]]></add>
+		</operation>
+	</file>
+
+	
+	<file name="$themedir/SendTopic.template.php">
+		<operation>
+			<search position="replace"><![CDATA[	if ($context['user']['is_guest'])
+	{
+		echo '
+							<dt>
+								<label for="email_address">', $txt['email'], '</label>:
+							</dt>
+							<dd>
+								<input type="text" id="email_address" name="email" value="', $context['email_address'], '" size="25" maxlength="255" />
+							</dd>';
+	}]]></search>
+			<add><![CDATA[	if ($context['user']['is_guest'])
+	{
+		echo '
+							<dt>
+								<label for="guestname">', $txt['name'], '</label>:
+							</dt>
+							<dd>
+								<input type="text" id="guestname" name="guestname" value="', $context['guestname'], '" size="25" maxlength="255" />
+							</dd>';		
+		
+		echo '
+							<dt>
+								<label for="email_address">', $txt['email'], '</label>:
+							</dt>
+							<dd>
+								<input type="text" id="email_address" name="email" value="', $context['email_address'], '" size="25" maxlength="255" />
+							</dd>';
+	}]]></add>
+		</operation>
+	</file>	
+	
+	
+	<file name="$themedir/Display.template.php">
+		<operation>
+			<search position="after"><![CDATA[		// Maybe they want to report this post to the moderator(s)?]]></search>
+			<add><![CDATA[		// A button to be used by moderators only.
+		if(($message['id'] == $context['first_message']) && ($context['current_board'] == $modSettings['report_board_id']) && allowedTo('can_solve_report'))
+		echo '
+								<em><a href="', $scripturl, '?action=report_solved;topic=' . $context['current_topic'] . '">', (empty($context['report_solved'])) ? '[' . $txt['report_solved']. ']' : '[' . $txt['report_unsolved']. ']' , '</a></em>';
+
+]]></add>
+		</operation>
+		<operation>
+			<search position="replace"><![CDATA[		if ($context['can_report_moderator'])
+]]></search>
+			<add><![CDATA[		if ($context['can_report_moderator'] && ($context['current_board'] != $modSettings['report_board_id']))
+]]></add>
+		</operation>
+	</file>
+
+	
+	<file name="$themedir/languages/Modifications.english.php">
+	<operation>
+		<search position="end"></search>
+		<add><![CDATA[
+$txt['post_made_by'] = 'Post made by';
+$txt['quote_reported_post'] = 'Quote the content of reported post';
+$txt['quote_reported_post_info'] = 'Disabling this option will just post a link to reported post.';
+$txt['enable_report_count'] = 'Count Posts of Report Board';
+$txt['enable_report_count_info'] = 'Raises the post count of users when they report a post.';
+$txt['enable_report_mod_count'] = 'Count the post when moderator solves a report';
+$txt['enable_report_mod_count_info'] = 'Raises the post count of moderators when they solve a report.';
+$txt['post_report_board'] = 'Reported by';
+$txt['post_link'] = 'Post Link';
+$txt['report_solved'] = 'Report Solved';
+$txt['report_unsolved'] = 'Report Unsolved';
+$txt['report_board'] = 'Enable custom report mod.';
+$txt['report_board_id'] = 'Board id to create post report.';
+$txt['rtm_noboard'] = 'Admin forgot to create the report board.';]]></add>
+	</operation>
+	</file>
+	
+	
+	<file name="$themedir/languages/ManagePermissions.english.php">
+		<operation>
+			<search position="before"><![CDATA[$txt['permissionhelp_issue_warning'] = 'Issue a warning to members of the forum and change that members\' warning level. Requires the warning system to be enabled.';]]></search>
+			<add><![CDATA[
+$txt['permissionname_can_solve_report'] = 'Can mark reports as solved';
+$txt['permissionhelp_can_solve_report'] = 'This will allow user to mark the reports as solved.';]]></add>
+		</operation>
+	</file>
+</modification>
