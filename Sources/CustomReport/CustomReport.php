@@ -39,14 +39,15 @@ class CustomReport {
 
 	public static $CustomReportAdmin;
 	public static $CustomReportRouter;
+	public static $CustomReportDB;
+	public static $CustomReportCore;
 
 	public static $sourceFolder = '/CustomReport/';
 
 	/**
 	 * Singleton method
 	 *
-	 * @return LikePosts
-	 * @return LikePosts
+	 * @return CustomReport
 	 */
 	public static function getInstance() {
 		if (self::$instance === null) {
@@ -79,6 +80,21 @@ class CustomReport {
 				}
 				break;
 
+			case 'CustomReportDB':
+				if (self::$CustomReportDB === null) {
+					require_once ($sourcedir . self::$sourceFolder . '/' . $className . '.php');
+					self::$CustomReportDB = new CustomReportDB();
+				}
+				break;
+
+
+			case 'CustomReportCore':
+				if (self::$CustomReportCore === null) {
+					require_once ($sourcedir . self::$sourceFolder . '/' . $className . '.php');
+					self::$CustomReportCore = new CustomReportCore();
+				}
+				break;
+
 			default:
 				break;
 		}
@@ -86,7 +102,7 @@ class CustomReport {
 
 	public static function addActionContext(&$actions) {
 		self::loadClass('CustomReportRouter');
-		$actions['report_solved'] = array(self::$sourceFolder . 'CustomReportRouter.php', 'CustomReportRouter::ReportSolved');
+		$actions['report_solved'] = array(self::$sourceFolder . 'CustomReportRouter.php', 'CustomReportRouter::reportSolved');
 	}
 
 	public static function addAdminPanel(&$admin_areas) {
@@ -94,7 +110,7 @@ class CustomReport {
 
 		$admin_areas['config']['areas']['customreport'] = array(
 			'label' => $txt['cr_admin_menu'],
-			'file' => '/LikePosts/CustomReportRouter.php',
+			'file' => '/CustomReport/CustomReportRouter.php',
 			'function' => 'routeCustomReportAdmin',
 			'icon' => 'administration.gif',
 			'subsections' => array(),
