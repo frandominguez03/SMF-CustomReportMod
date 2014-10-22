@@ -47,8 +47,8 @@ class CustomReportAdmin {
 		$reportBoards = CustomReport::$CustomReportDB->reportBoardsOptions();
 
 		$general_settings = array(
-			array('check', 'cr_report_board', 'onclick' => 'document.getElementById(\'report_board_id\').disabled = !this.checked;'),
-			array('select', 'cr_report_board_id', $reportBoards),
+			array('check', 'cr_enable_mod', 'onclick' => 'document.getElementById(\'cr_report_board_id\').disabled = !this.checked;'),
+			array('select', 'cr_report_board', $reportBoards),
 			array('check', 'cr_quote_reported_post', 'subtext' => $txt['cr_quote_reported_post_info']),
 			array('check', 'cr_enable_report_count', 'subtext' => $txt['cr_enable_report_count_info']),
 			array('check', 'cr_enable_report_mod_count', 'subtext' => $txt['cr_enable_report_mod_count_info']),
@@ -70,8 +70,8 @@ class CustomReportAdmin {
 		checkSession('request', '', true);
 
 		$general_settings = array(
-			array('check', 'cr_report_board'),
-			array('select', 'cr_report_board_id'),
+			array('check', 'cr_enable_mod'),
+			array('select', 'cr_report_board'),
 			array('check', 'cr_quote_reported_post'),
 			array('check', 'cr_enable_report_count'),
 			array('check', 'cr_enable_report_mod_count'),

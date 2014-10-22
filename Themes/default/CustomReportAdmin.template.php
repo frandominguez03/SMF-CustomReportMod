@@ -27,7 +27,6 @@
 * the Initial Developer. All Rights Reserved.
 *
 * Contributor(s): Big thanks to all contributor(s)
-* emanuele45 (https://github.com/emanuele45)
 *
 */
 
@@ -37,7 +36,7 @@ function template_cr_admin_info() {
 	echo '
 	<div class="cat_bar">
 		<h3 class="catbg">
-			<span class="ie6_header floatleft">', $txt['lp_admin_panel'] ,'</span>
+			<span class="ie6_header floatleft">', $txt['cr_admin_panel'] ,'</span>
 		</h3>
 	</div>
 	<p class="windowbg description">', isset($context['custom_report']['tab_desc']) ? $context['custom_report']['tab_desc'] : $txt['rp_general_desc'] ,'</p>';
@@ -72,7 +71,7 @@ function template_cr_admin_info() {
 function template_cr_admin_general_settings() {
 	global $context, $txt, $scripturl;
 
-	template_lp_admin_info();
+	template_cr_admin_info();
 
 	echo '
 	<div id="admincenter">
@@ -94,12 +93,32 @@ function template_cr_admin_general_settings() {
 							</dt>
 							<dd>';
 
-							if($config_var['type'] === 'check') {
-								echo '
-								<input type="checkbox" name="', $config_var['name'], '" id="', $config_var['name'], '"', ($config_var['value'] ? ' checked="checked"' : ''), ' value="1" class="input_check" />';
-							} elseif ($config_var['type'] === 'text') {
-								echo '
-								<input type="text" name="', $config_var['name'], '" id="', $config_var['name'], '" value="', $config_var['value'], '"', ($config_var['size'] ? ' size="' . $config_var['size'] . '"' : ''), ' class="input_text" />';
+							switch($config_var['type']) {
+								case 'check':
+									echo '
+									<input type="checkbox" name="', $config_var['name'], '" id="', $config_var['name'], '"', ($config_var['value'] ? ' checked="checked"' : ''), ' value="1" class="input_check" />';
+									break;
+
+								case 'text':
+									echo '
+									<input type="text" name="', $config_var['name'], '" id="', $config_var['name'], '" value="', $config_var['value'], '"', ($config_var['size'] ? ' size="' . $config_var['size'] . '"' : ''), ' class="input_text" />';
+									break;
+
+								case 'select':
+									echo '
+									<select name="', $config_var['name'], '" id="', $config_var['name'], '" ', $javascript, $disabled, (!empty($config_var['multiple']) ? ' multiple="multiple"' : ''), '>';
+
+									foreach ($config_var['data'] as $option) {
+										echo '
+										<option value="', $option[0], '"', (($option[0] == $config_var['value'] || (!empty($config_var['multiple']) && in_array($option[0], $config_var['value']))) ? ' selected="selected"' : ''), '>', $option[1], '</option>';
+									}
+
+									echo '
+									</select>';
+									break;
+
+								default:
+									break;
 							}
 
 							echo '
