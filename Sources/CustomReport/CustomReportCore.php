@@ -50,7 +50,7 @@ class CustomReportCore {
 				'body' => $body,
 			);
 			$topicOptions = array(
-				'id' => $topic,
+				'id' => $topicId,
 				'board' => $modSettings['report_board_id'],
 				'lock_mode' => 1,
 				'mark_as_read' => true,
@@ -63,7 +63,12 @@ class CustomReportCore {
 		} else {
 			CustomReport::$CustomReportDB->unlockTopic($topicId);
 		}
-		CustomReport::$CustomReportDB->setSolveStatus(empty($result['solved']) ? 1 : 0);
+
+		$isSolved = empty($result['solved']) ? 1 : 0;
+		CustomReport::$CustomReportDB->setSolveStatus(array(
+			'isSolved' => $isSolved,
+			'topicId' => $topicId
+		));
 	}
 }
 

@@ -62,7 +62,7 @@ class CustomReportDB {
 	public function unlockTopic($topicId) {
 		global $smcFunc;
 
-		$request = $smcFunc['db_query']('', '
+		$smcFunc['db_query']('', '
 			UPDATE {db_prefix}topics
 			SET locked = {int:locked}
 			WHERE id_topic = {int:topic}',
@@ -73,16 +73,16 @@ class CustomReportDB {
 		);
 	}
 
-	public function setSolveStatus($status) {
+	public function setSolveStatus($data) {
 		global $smcFunc;
 
-		$request = $smcFunc['db_query']('', '
+		$smcFunc['db_query']('', '
 			UPDATE {db_prefix}custom_report_mod
 			SET solved = {int:is_solved}
 			WHERE id_report_topic = {int:topic}',
 			array(
-				'is_solved' => $status,
-				'topic' => $topic,
+				'is_solved' => $data['isSolved'],
+				'topic' => $data['topicId'],
 			)
 		);
 	}
