@@ -60,15 +60,11 @@ class CustomReportUtils {
 		return $data;
 	}
 
-	public function isAllowedTo($permissions) {
+	public function isAllowedTo() {
 		global $user_info, $modSettings;
 
 		if ($user_info['is_admin']) {
 			return true;
-		}
-
-		if (!is_array($permissions)) {
-			$permissions = array($permissions);
 		}
 
 		$allowedGroups = explode(',', $modSettings['cr_can_solve_report']);

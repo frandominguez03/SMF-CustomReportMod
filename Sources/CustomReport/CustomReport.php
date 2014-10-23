@@ -53,6 +53,7 @@ class CustomReport {
 		if (self::$instance === null) {
 			self::$instance = new CustomReport();
 			loadLanguage('CustomReport');
+			self::loadClass('CustomReportUtils');
 		}
 		return self::$instance;
 	}
