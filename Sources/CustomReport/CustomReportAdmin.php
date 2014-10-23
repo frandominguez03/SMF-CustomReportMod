@@ -43,7 +43,6 @@ class CustomReportAdmin {
 		global $txt, $context, $sourcedir;
 
 		require_once($sourcedir . '/ManageServer.php');
-
 		$reportBoards = CustomReport::$CustomReportDB->reportBoardsOptions();
 
 		$general_settings = array(
@@ -69,9 +68,10 @@ class CustomReportAdmin {
 		isAllowedTo('admin_forum');
 		checkSession('request', '', true);
 
+		$reportBoards = CustomReport::$CustomReportDB->reportBoardsOptions();
 		$general_settings = array(
 			array('check', 'cr_enable_mod'),
-			array('select', 'cr_report_board'),
+			array('select', 'cr_report_board', $reportBoards),
 			array('check', 'cr_quote_reported_post'),
 			array('check', 'cr_enable_report_count'),
 			array('check', 'cr_enable_report_mod_count'),
