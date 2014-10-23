@@ -80,7 +80,70 @@ class CustomReportAdmin {
 
 		require_once($sourcedir . '/ManageServer.php');
 		saveDBSettings($general_settings);
-		redirectexit('action=admin;area=likeposts;sa=generalsettings');
+		redirectexit('action=admin;area=customreport;sa=generalsettings');
+	}
+
+	public function permissionSettings() {
+		global $txt, $context, $sourcedir;
+
+		require_once($sourcedir . '/Subs-Membergroups.php');
+		$context['custom_report']['groups_permission_settings'] = array(
+			'cr_can_solve_report'
+		);
+		$context['custom_report']['groups'] = list_getMembergroups(null, null, 'id_group', 'regular');
+
+		$context['page_title'] = $txt['cr_admin_panel'];
+		$context['sub_template'] = 'cr_admin_permission_settings';
+		$context['custom_report']['tab_name'] = $txt['cr_permission_settings'];
+		$context['custom_report']['tab_desc'] = $txt['cr_permission_settings_desc'];
+	}
+
+	public function savePermissionsettings() {
+		global $context;
+
+		/* I can has Adminz? */
+		isAllowedTo('admin_forum');
+		checkSession('request', '', true);
+		unset($_POST['submit']);
+
+		// set up the vars for groups and guests permissions
+		$context['custom_report']['groups_permission_settings'] = array(
+			'cr_can_solve_report'
+		);
+
+		$permissionKeys = array(
+			'cr_can_solve_report',
+		);
+
+		// Array to be saved to DB
+		$general_settings = array();
+		foreach($_POST as $key => $val) {
+			if(in_array($key, $context['custom_report']['groups_permission_settings'])) {
+				// Extract the user permissions first
+				if(array_filter($_POST[$key], 'is_numeric') === $_POST[$key]) {
+					if(($key1 = array_search($key, $permissionKeys)) !== false) {
+						unset($permissionKeys[$key1]);
+					}
+					$_POST[$key] = implode(',', $_POST[$key]);
+					$general_settings[] = array($key, $_POST[$key]);
+				}
+			}
+		}
+
+		// Remove the keys which were saved previously but removed this time
+		if(!empty($permissionKeys)) {
+			foreach ($permissionKeys as $value) {
+				$general_settings[] = array($value, '');
+			}
+		}
+
+		if(!empty($guestPermissionKeys)) {
+			foreach ($guestPermissionKeys as $value) {
+				$general_settings[] = array($value, '');
+			}
+		}
+		CustomReport::$CustomReportDB->updatePermissions($general_settings);
+		redirectexit('action=admin;area=customreport;sa=permissionsettings');
 	}
 }
 

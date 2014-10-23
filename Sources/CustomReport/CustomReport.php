@@ -117,19 +117,6 @@ class CustomReport {
 		);
 	}
 
-	public static function loadPermissions(&$permissionGroups, &$permissionList) {
-		global $context;
-
-		$permissionGroups['membergroup']['simple'] = array('can_solve_report');
-		$permissionGroups['membergroup']['classic'] = array('can_solve_report');
-		$permissionList['membergroup']['can_solve_report'] = array(false, 'member_admin', 'moderate_general');
-
-		$context['non_guest_permissions'] = array_merge(
-			$context['non_guest_permissions'],
-			array('can_solve_report')
-		);
-	}
-
 	public static function customReportOb(&$buffer) {
 		global $modSettings, $context;
 

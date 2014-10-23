@@ -34,20 +34,12 @@ global $txt;
 
 // General mod strings
 $txt['cr_post_made_by'] = 'Post made by';
-$txt['cr_quote_reported_post'] = 'Quote the content of reported post';
-$txt['cr_quote_reported_post_info'] = 'Disabling this option will just post a link to reported post.';
-$txt['cr_enable_report_count'] = 'Count Posts of Report Board';
-$txt['cr_enable_report_count_info'] = 'Raises the post count of users when they report a post.';
-$txt['cr_enable_report_mod_count'] = 'Count the post when moderator solves a report';
-$txt['cr_enable_report_mod_count_info'] = 'Raises the post count of moderators when they solve a report.';
-$txt['cr_enable_large_report_field'] = 'Use bigger input field for writing reports';
-$txt['cr_enable_large_report_field_info'] = 'Instead of single line, it gives you are large text area while reporting posts';
+
 $txt['cr_post_report_board'] = 'Reported by';
 $txt['cr_post_link'] = 'Post Link';
 $txt['cr_report_solved'] = 'Mark Solved';
 $txt['cr_report_unsolved'] = 'Mark Unsolved';
-$txt['cr_report_board'] = 'Enable custom report mod.';
-$txt['cr_report_board_id'] = 'Board id to create post report.';
+
 $txt['cr_rtm_noboard'] = 'Admin forgot to create the report board.';
 
 // Permission Strings
@@ -58,8 +50,22 @@ $txt['cr_admin_panel_title'] = 'Custom report';
 $txt['cr_admin_panel'] = 'Custom report mod admin panel';
 $txt['cr_general_settings'] = 'General Settings';
 $txt['cr_general_settings_desc'] = 'You can make all global settings for custom reports mod from here.';
+
+// General settings text keys
+$txt['cr_enable_mod'] = 'Enable custom report mod.';
+$txt['cr_report_board'] = 'Board id to create post report.';
+$txt['cr_quote_reported_post'] = 'Quote the content of reported post';
+$txt['cr_quote_reported_post_info'] = 'Disabling this option will just post a link to reported post.';
+$txt['cr_enable_report_count'] = 'Count Posts of Report Board';
+$txt['cr_enable_report_count_info'] = 'Raises the post count of users when they report a post.';
+$txt['cr_enable_report_mod_count'] = 'Count the post when moderator solves a report';
+$txt['cr_enable_report_mod_count_info'] = 'Raises the post count of moderators when they solve a report.';
+$txt['cr_enable_large_report_field'] = 'Use bigger input field for writing reports';
+$txt['cr_enable_large_report_field_info'] = 'Instead of single line, it gives you are large text area while reporting posts';
+
 $txt['cr_permission_settings'] = 'Permission Settings';
 $txt['cr_permission_settings_desc'] = 'You can make all group based permission settings for custom reports mod from here.';
+$txt['cr_perm_cr_can_solve_report'] = 'Groups can mark reported topic solved';
 
 $txt['cr_submit'] = 'Submit';
 
