@@ -1,8 +1,8 @@
 <?php
 
 /**
-* @package manifest file for Like Posts
-* @version 2.0.1
+* @package manifest file for Custom Report Mod
+* @version 1.4
 * @author Joker (http://www.simplemachines.org/community/index.php?action=profile;u=226111)
 * @copyright Copyright (c) 2014, Siddhartha Gupta
 * @license http://www.mozilla.org/MPL/MPL-1.1.html
@@ -26,8 +26,7 @@
 * Portions created by the Initial Developer are Copyright (C) 2012
 * the Initial Developer. All Rights Reserved.
 *
-* Contributor(s): Big thanks to all contributor(s)
-* emanuele45 (https://github.com/emanuele45)
+* Contributor(s):
 *
 */
 
@@ -92,7 +91,6 @@ class CustomReportRouter {
 
 		loadLanguage('Post');
 		require_once($sourcedir . '/Subs-Post.php');
-		CustomReport::loadClass('CustomReportDB');
 		CustomReport::loadClass('CustomReportCore');
 
 		CustomReport::$CustomReportCore->reportSolved($topic);

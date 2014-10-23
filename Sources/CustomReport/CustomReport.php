@@ -26,7 +26,7 @@
 * Portions created by the Initial Developer are Copyright (C) 2012
 * the Initial Developer. All Rights Reserved.
 *
-* Contributor(s): Big thanks to all contributor(s)
+* Contributor(s):
 *
 */
 
@@ -39,8 +39,8 @@ class CustomReport {
 
 	public static $CustomReportAdmin;
 	public static $CustomReportRouter;
-	public static $CustomReportDB;
 	public static $CustomReportCore;
+	public static $CustomReportUtils;
 
 	public static $sourceFolder = '/CustomReport/';
 
@@ -81,10 +81,7 @@ class CustomReport {
 				break;
 
 			case 'CustomReportDB':
-				if (self::$CustomReportDB === null) {
-					require_once ($sourcedir . self::$sourceFolder . '/' . $className . '.php');
-					self::$CustomReportDB = new CustomReportDB();
-				}
+				require_once ($sourcedir . self::$sourceFolder . '/' . $className . '.php');
 				break;
 
 
@@ -92,6 +89,13 @@ class CustomReport {
 				if (self::$CustomReportCore === null) {
 					require_once ($sourcedir . self::$sourceFolder . '/' . $className . '.php');
 					self::$CustomReportCore = new CustomReportCore();
+				}
+				break;
+
+			case 'CustomReportUtils':
+				if (self::$CustomReportUtils === null) {
+					require_once ($sourcedir . self::$sourceFolder . '/' . $className . '.php');
+					self::$CustomReportUtils = new CustomReportUtils();
 				}
 				break;
 

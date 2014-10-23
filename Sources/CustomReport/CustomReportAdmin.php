@@ -37,13 +37,15 @@ if (!defined('SMF'))
 class CustomReportAdmin {
 	private $dbInstance;
 
-	public function __construct() {}
+	public function __construct() {
+		$this->dbInstance = new CustomReportDB();
+	}
 
 	public function generalSettings($return_config = false) {
 		global $txt, $context, $sourcedir;
 
 		require_once($sourcedir . '/ManageServer.php');
-		$reportBoards = CustomReport::$CustomReportDB->reportBoardsOptions();
+		$reportBoards = $this->dbInstance->reportBoardsOptions();
 
 		$general_settings = array(
 			array('check', 'cr_enable_mod', 'onclick' => 'document.getElementById(\'cr_report_board_id\').disabled = !this.checked;'),
@@ -68,7 +70,7 @@ class CustomReportAdmin {
 		isAllowedTo('admin_forum');
 		checkSession('request', '', true);
 
-		$reportBoards = CustomReport::$CustomReportDB->reportBoardsOptions();
+		$reportBoards = $this->dbInstance->reportBoardsOptions();
 		$general_settings = array(
 			array('check', 'cr_enable_mod'),
 			array('select', 'cr_report_board', $reportBoards),
@@ -142,7 +144,7 @@ class CustomReportAdmin {
 				$general_settings[] = array($value, '');
 			}
 		}
-		CustomReport::$CustomReportDB->updatePermissions($general_settings);
+		$this->dbInstance->updatePermissions($general_settings);
 		redirectexit('action=admin;area=customreport;sa=permissionsettings');
 	}
 }

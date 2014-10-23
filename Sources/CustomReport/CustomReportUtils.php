@@ -33,46 +33,51 @@
 if (!defined('SMF'))
 	die('Hacking attempt...');
 
-class CustomReportCore {
+class CustomReportUtils {
 	private $dbInstance;
 
-	public function __construct() {
-		CustomReport::loadClass('CustomReportDB');
-		$this->dbInstance = new CustomReportDB();
-	}
+	public function __construct() {}
 
-	public function reportSolved($topicId) {
-		global $txt, $board_info, $user_info, $modSettings;
+	public function checkSolveStatus($topicId) {
+		global $txt, $context, $modSettings;
 
-		$result = $this->dbInstance->checkIsTopicSolved($topicId);
-		if(empty($result['solved'])) {
-			$subject = '[' .$txt['report_solved'] . ']'. ' ' . $result['subject'];
-			$body = $txt['report_solved'] . ' ' . $txt['by'] . ' ' . '\''. $user_info['name'] . '\'';
-
-			$msgOptions = array(
-				'subject' => $subject,
-				'body' => $body,
+		if($context['current_board'] !== $modSettings['report_board_id'] || !$this->isAllowedTo()) {
+			$data = array(
+				'showButton' => false,
 			);
-			$topicOptions = array(
-				'id' => $topicId,
-				'board' => $modSettings['report_board_id'],
-				'lock_mode' => 1,
-				'mark_as_read' => true,
-			);
-			$posterOptions = array(
-				'id' => $user_info['id'],
-				'update_post_count' => !empty($modSettings['enable_report_mod_count']) && $board_info['posts_count'],
-			);
-			createPost($msgOptions, $topicOptions, $posterOptions);
-		} else {
-			$this->dbInstance->unlockTopic($topicId);
+			return $data;
 		}
 
-		$isSolved = empty($result['solved']) ? 1 : 0;
-		$this->dbInstance->setSolveStatus(array(
-			'isSolved' => $isSolved,
-			'topicId' => $topicId
-		));
+		// Load the class if only required
+		CustomReport::loadClass('CustomReportDB');
+		$this->$dbInstance = new CustomReportDB();
+
+		$isTopicSolved = $this->$dbInstance->checkIsTopicSolved($topicId);
+		$data = array(
+			'text' => empty($isTopicSolved['solved']) ? '[' . $txt['report_solved']. ']' : '[' . $txt['report_unsolved']. ']',
+			'showButton' => true
+		);
+		return $data;
+	}
+
+	public function isAllowedTo($permissions) {
+		global $user_info, $modSettings;
+
+		if ($user_info['is_admin']) {
+			return true;
+		}
+
+		if (!is_array($permissions)) {
+			$permissions = array($permissions);
+		}
+
+		$allowedGroups = explode(',', $modSettings['cr_can_solve_report']);
+		$groupsPassed = array_intersect($allowedGroups, $user_info['groups']);
+
+		if (empty($groupsPassed)) {
+			return false;
+		}
+		return true;
 	}
 }
 

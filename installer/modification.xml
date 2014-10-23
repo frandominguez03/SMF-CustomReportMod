@@ -38,22 +38,9 @@
 	
 	<file name="$sourcedir/Display.php">
 		<operation>
-			<search position="replace"><![CDATA[			t.id_member_started, t.id_first_msg, t.id_last_msg, t.approved, t.unapproved_posts,
-]]></search>
-			<add><![CDATA[			t.id_member_started, t.id_first_msg, t.id_last_msg, t.approved, t.unapproved_posts, c.solved,
-]]></add>
-		</operation>
-		<operation>
-			<search position="replace"><![CDATA[			INNER JOIN {db_prefix}messages AS ms ON (ms.id_msg = t.id_first_msg)' . ($user_info['is_guest'] ? '' : '
-]]></search>
-			<add><![CDATA[			INNER JOIN {db_prefix}messages AS ms ON (ms.id_msg = t.id_first_msg)
-			LEFT JOIN {db_prefix}custom_report_mod as c ON (c.id_report_topic = {int:current_topic})' . ($user_info['is_guest'] ? '' : '
-]]></add>
-		</operation>
-		<operation>
 			<search position="before"><![CDATA[	$context['topic_last_message'] = $topicinfo['id_last_msg'];
 ]]></search>
-			<add><![CDATA[	$context['report_solved'] = $topicinfo['solved'];
+			<add><![CDATA[	$context['report_solved'] = CustomReport::$CustomReportUtils->checkSolveStatus($topicId);
 ]]></add>
 		</operation>
 	</file>
@@ -125,9 +112,9 @@
 		<operation>
 			<search position="after"><![CDATA[		// Maybe they want to report this post to the moderator(s)?]]></search>
 			<add><![CDATA[		// A button to be used by moderators only.
-		if(($message['id'] == $context['first_message']) && ($context['current_board'] == $modSettings['report_board_id']) && allowedTo('can_solve_report'))
+		if(($message['id'] == $context['first_message']) && $context['report_solved']['showButton'])
 		echo '
-								<em><a href="', $scripturl, '?action=report_solved;topic=' . $context['current_topic'] . '">', (empty($context['report_solved'])) ? '[' . $txt['report_solved']. ']' : '[' . $txt['report_unsolved']. ']' , '</a></em>';
+								<em><a href="', $scripturl, '?action=report_solved;topic=' . $context['current_topic'] . '">', $context['report_solved']['text'], '</a></em>';
 
 ]]></add>
 		</operation>
