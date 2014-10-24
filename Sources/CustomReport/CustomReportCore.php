@@ -85,10 +85,6 @@ class CustomReportCore {
 			return $data;
 		}
 
-		// Load the class if only required
-		CustomReport::loadClass('CustomReportDB');
-		$this->$dbInstance = new CustomReportDB();
-
 		$isTopicSolved = $this->$dbInstance->checkIsTopicSolved($topicId);
 		$data = array(
 			'text' => empty($isTopicSolved['solved']) ? '[' . $txt['report_solved']. ']' : '[' . $txt['report_unsolved']. ']',
@@ -290,7 +286,7 @@ class CustomReportCore {
 		// Opps someone is making a reply, quickly mark this as unsolved
 		else
 		{
-			$request = $smcFunc['db_query']('', '
+			$smcFunc['db_query']('', '
 				UPDATE {db_prefix}custom_report_mod
 				SET solved = {int:is_solved}
 				WHERE id_report_topic = {int:topic}',
