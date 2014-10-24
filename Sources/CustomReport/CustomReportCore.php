@@ -55,13 +55,13 @@ class CustomReportCore {
 			);
 			$topicOptions = array(
 				'id' => $topicId,
-				'board' => $modSettings['report_board_id'],
+				'board' => $modSettings['cr_report_board'],
 				'lock_mode' => 1,
 				'mark_as_read' => true,
 			);
 			$posterOptions = array(
 				'id' => $user_info['id'],
-				'update_post_count' => !empty($modSettings['enable_report_mod_count']) && $board_info['posts_count'],
+				'update_post_count' => !empty($modSettings['cr_enable_report_mod_count']) && $board_info['posts_count'],
 			);
 			createPost($msgOptions, $topicOptions, $posterOptions);
 		} else {
@@ -78,7 +78,7 @@ class CustomReportCore {
 	public function checkSolveStatus($topicId) {
 		global $txt, $context, $modSettings;
 
-		if($context['current_board'] !== $modSettings['report_board_id'] || !$this->isAllowedTo()) {
+		if($context['current_board'] !== $modSettings['cr_report_board'] || !$this->isAllowedTo()) {
 			$data = array(
 				'showButton' => false,
 			);
@@ -122,7 +122,7 @@ class CustomReportCore {
 
 		require_once($sourcedir . '/Subs-Post.php');
 
-		if(empty($modSettings['report_board_id']))
+		if(empty($modSettings['cr_report_board']))
 		fatal_lang_error('rtm_noboard');
 
 		// No errors, yet.
@@ -234,7 +234,7 @@ class CustomReportCore {
 
 		$body = $txt['post_report_board'] . ' : ' . $reporterName . '<br /><br />' .
 			$txt['post_made_by'] . ' : ' . $message['real_name'] . ' ' . $txt['at'] . ' ' . timeformat($message['poster_time']) . '<br /><br />' .
-			(!empty($modSettings['quote_reported_post']) ? '[quote author=' . $poster_name . ' link=topic=' . $topic . '.msg' . $_POST['msg'] . '#msg' . $_POST['msg'] . ' date=' . $message['poster_time'] . ']' . "\n" . rtrim($message['body']) . "\n" . '[/quote]' :
+			(!empty($modSettings['cr_quote_reported_post']) ? '[quote author=' . $poster_name . ' link=topic=' . $topic . '.msg' . $_POST['msg'] . '#msg' . $_POST['msg'] . ' date=' . $message['poster_time'] . ']' . "\n" . rtrim($message['body']) . "\n" . '[/quote]' :
 			'<a href="'. $scripturl .  '?topic=' . $topic . '.msg' . $_POST['msg'] . '#msg' . $_POST['msg'] .'" target="_blank">' . $txt['post_link'] . '</a><br /><br />') .
 			'<br />' . $txt['report_comment'] . ' : ' . '<br />' .
 			$poster_comment;
@@ -253,7 +253,7 @@ class CustomReportCore {
 		);
 		$topicOptions = array(
 			'id' => empty($context['report_mod']['id_report_topic']) ? 0 : $context['report_mod']['id_report_topic'],
-			'board' => $modSettings['report_board_id'],
+			'board' => $modSettings['cr_report_board'],
 			'poll' => null,
 			'lock_mode' => 0,
 			'sticky_mode' => null,
@@ -264,7 +264,7 @@ class CustomReportCore {
 			'id' => $user_info['id'],
 			'name' => $reporterName,
 			'email' => $user_info['email'],
-			'update_post_count' => !$user_info['is_guest'] && !empty($modSettings['enable_report_count']) && $board_info['posts_count'],
+			'update_post_count' => !$user_info['is_guest'] && !empty($modSettings['cr_enable_report_count']) && $board_info['posts_count'],
 		);
 
 		// And at last make a post, yeyy :P!

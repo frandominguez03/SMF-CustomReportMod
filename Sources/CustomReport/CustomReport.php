@@ -117,7 +117,7 @@ class CustomReport {
 	public static function customReportOb(&$buffer) {
 		global $modSettings, $context;
 
-		if (!empty($modSettings['report_board']) && !empty($modSettings['enable_large_report_field'])) {
+		if (!empty($modSettings['cr_enable_mod']) && !empty($modSettings['cr_enable_large_report_field'])) {
 			$buffer = preg_replace('~(' . preg_quote('<input type="text" id="report_comment" name="comment" size="50" value="" maxlength="255" />') . ')~', '<textarea id="report_comment" name="comment" cols="60" rows="6" tabindex="'. $context['tabindex']++ . '" value=""></textarea>', $buffer);
 		}
 		return $buffer;

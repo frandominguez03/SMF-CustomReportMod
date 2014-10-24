@@ -40,7 +40,7 @@
 		<operation>
 			<search position="before"><![CDATA[	$context['topic_last_message'] = $topicinfo['id_last_msg'];
 ]]></search>
-			<add><![CDATA[	$context['report_solved'] = CustomReport::$CustomReportCore->checkSolveStatus($topicId);
+			<add><![CDATA[	$context['report_solved'] = CustomReport::$CustomReportCore->checkSolveStatus($topic);
 ]]></add>
 		</operation>
 	</file>
@@ -50,7 +50,7 @@
 			<search position="replace"><![CDATA[if ((isset($_POST[$context['session_var']]) || isset($_POST['submit'])) && empty($context['post_errors']))
 		ReportToModerator2();]]></search>
 			<add><![CDATA[if ((isset($_POST[$context['session_var']]) || isset($_POST['submit'])) && empty($context['post_errors'])) {
-		if(!empty($modSettings['report_board'])) {
+		if(!empty($modSettings['cr_enable_mod'])) {
 			CustomReport::$CustomReportUtils->CustomReportToModerator2();
 		} else {
 			ReportToModerator2();
@@ -63,7 +63,7 @@
 	$context['email_address'] = !isset($_POST['email']) ? '' : trim($_POST['email']);]]></search>
 			<add><![CDATA[	
 	// Ask the name from guests if custom report mod is enabled.
-	if(!empty($modSettings['report_board']))
+	if(!empty($modSettings['cr_enable_mod']))
 	$context['guestname'] = !isset($_POST['guestname']) ? '' : trim($_POST['guestname']);]]></add>
 		</operation>		
 	</file>
