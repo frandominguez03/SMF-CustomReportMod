@@ -47,16 +47,15 @@
 	
 	<file name="$sourcedir/SendTopic.php">
 		<operation>
-			<search position="replace"><![CDATA[	if ((isset($_POST[$context['session_var']]) || isset($_POST['submit'])) && empty($context['post_errors']))
+			<search position="replace"><![CDATA[if ((isset($_POST[$context['session_var']]) || isset($_POST['submit'])) && empty($context['post_errors']))
 		ReportToModerator2();]]></search>
-			<add><![CDATA[	if ((isset($_POST[$context['session_var']]) || isset($_POST['submit'])) && empty($context['post_errors']) && !empty($modSettings['report_board']))
-			{
-		require_once($sourcedir . '/CustomReport.php');
-		CustomReportToModerator2();	
-	}
-	
-	elseif ((isset($_POST[$context['session_var']]) || isset($_POST['submit'])) && empty($context['post_errors']))
-		ReportToModerator2();]]></add>
+			<add><![CDATA[if ((isset($_POST[$context['session_var']]) || isset($_POST['submit'])) && empty($context['post_errors'])) {
+		if(!empty($modSettings['report_board'])) {
+			CustomReport::$CustomReportUtils->CustomReportToModerator2();
+		} else {
+			ReportToModerator2();
+		}
+	}]]></add>
 		</operation>
 
 		<operation>
