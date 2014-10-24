@@ -40,7 +40,7 @@
 		<operation>
 			<search position="before"><![CDATA[	$context['topic_last_message'] = $topicinfo['id_last_msg'];
 ]]></search>
-			<add><![CDATA[	$context['report_solved'] = CustomReport::$CustomReportUtils->checkSolveStatus($topicId);
+			<add><![CDATA[	$context['report_solved'] = CustomReport::$CustomReportCore->checkSolveStatus($topicId);
 ]]></add>
 		</operation>
 	</file>

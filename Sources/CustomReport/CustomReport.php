@@ -40,7 +40,6 @@ class CustomReport {
 	public static $CustomReportAdmin;
 	public static $CustomReportRouter;
 	public static $CustomReportCore;
-	public static $CustomReportUtils;
 
 	public static $sourceFolder = '/CustomReport/';
 
@@ -53,7 +52,7 @@ class CustomReport {
 		if (self::$instance === null) {
 			self::$instance = new CustomReport();
 			loadLanguage('CustomReport');
-			self::loadClass('CustomReportUtils');
+			self::loadClass('CustomReportCore');
 		}
 		return self::$instance;
 	}
@@ -90,13 +89,6 @@ class CustomReport {
 				if (self::$CustomReportCore === null) {
 					require_once ($sourcedir . self::$sourceFolder . '/' . $className . '.php');
 					self::$CustomReportCore = new CustomReportCore();
-				}
-				break;
-
-			case 'CustomReportUtils':
-				if (self::$CustomReportUtils === null) {
-					require_once ($sourcedir . self::$sourceFolder . '/' . $className . '.php');
-					self::$CustomReportUtils = new CustomReportUtils();
 				}
 				break;
 
