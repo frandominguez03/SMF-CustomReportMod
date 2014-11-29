@@ -252,7 +252,7 @@ class CustomReportCore {
 		createPost($msgOptions, $topicOptions, $posterOptions);
 
 		// set update report status
-		$idReportTopic = $this->dbInstance->setReportStatus(array(
+		$this->dbInstance->setReportStatus(array(
 			'idReportTopic' => $idReportTopic,
 			'topic' => $topic,
 			'msg' => $msgId
