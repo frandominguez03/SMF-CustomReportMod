@@ -157,7 +157,7 @@ class CustomReportDB {
 			AND c.id_topic = {int:current_topic}
 			LIMIT 1',
 			array(
-				'id_msg' => $data['msgId'],
+				'id_msg' => $data['msg'],
 				'current_topic' => $data['topic'],
 			)
 		);
@@ -178,7 +178,7 @@ class CustomReportDB {
 					'id_report_topic' => 'int', 'id_msg' => 'int', 'id_topic' => 'int',
 				),
 				array(
-					$data['idReportTopic'], $data['msgId'], $data['topic'],
+					$data['idReportTopic'], $data['msg'], $data['topic'],
 				),
 			array('')
 			);

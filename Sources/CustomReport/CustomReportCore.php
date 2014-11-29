@@ -202,7 +202,6 @@ class CustomReportCore {
 			'topic' => $topic,
 			'msg' => $msgId
 		));
-		// list ($context['report_mod']['id_report_topic'], $context['report_mod']['id_msg'], $context['report_mod']['id_topic']) = $smcFunc['db_fetch_row']($request);
 
 		// Get the poster and reporter names
 		$poster_name = un_htmlspecialchars($message['real_name']);

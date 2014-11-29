@@ -88,11 +88,11 @@
 		SELECT b.id_board, b.name AS board_name, c.name AS cat_name
 		FROM {db_prefix}boards AS b
 			LEFT JOIN {db_prefix}categories AS c ON (c.id_cat = b.id_cat)
-		WHERE redirect = {string:empty_string}' . (!empty($modSettings['report_board']) && $modSettings['report_board_id'] > 0 ? '
-		AND b.id_board != {int:report_board_id}' : ''),
+		WHERE redirect = {string:empty_string}' . (!empty($modSettings['cr_enable_mod']) && $modSettings['cr_report_board'] > 0 ? '
+		AND b.id_board != {int:cr_report_board}' : ''),
 		array(
 			'empty_string' => '',
-			'report_board_id' => $modSettings['report_board_id'],
+			'cr_report_board' => $modSettings['cr_report_board'],
 		)
 	);
 	while ($row = $smcFunc['db_fetch_assoc']($request))
