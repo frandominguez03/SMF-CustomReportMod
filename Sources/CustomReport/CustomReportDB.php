@@ -122,6 +122,79 @@ class CustomReportDB {
 		$smcFunc['db_free_result']($request);
 		return $reportBoards;
 	}
+
+	public function canSeeTopic($data) {
+		global $smcFunc;
+
+		$request = $smcFunc['db_query']('', '
+			SELECT m.id_topic, m.subject, m.body, m.id_member AS id_poster, m.poster_name, mem.real_name, m.poster_time
+			FROM {db_prefix}messages AS m
+				LEFT JOIN {db_prefix}members AS mem ON (m.id_member = mem.id_member)
+			WHERE m.id_msg = {int:id_msg}
+				AND m.id_topic = {int:current_topic}
+			LIMIT 1',
+			array(
+				'current_topic' => $data['topic'],
+				'id_msg' => $data['msg'],
+			)
+		);
+		if ($smcFunc['db_num_rows']($request) == 0)
+			fatal_lang_error('no_board', false);
+
+		$message = $smcFunc['db_fetch_assoc']($request);
+		$smcFunc['db_free_result']($request);
+		return $message;
+	}
+
+	public function isAlreadyReported($data) {
+		global $smcFunc;
+
+		$idReportTopic = 0;
+		$request = $smcFunc['db_query']('', '
+			SELECT c.id_report_topic
+			FROM {db_prefix}custom_report_mod AS c
+			WHERE c.id_msg = {int:id_msg}
+			AND c.id_topic = {int:current_topic}
+			LIMIT 1',
+			array(
+				'id_msg' => $data['msgId'],
+				'current_topic' => $data['topic'],
+			)
+		);
+		if ($smcFunc['db_num_rows']($request) > 0)
+			list ($idReportTopic) = $smcFunc['db_fetch_row']($request);
+
+		$smcFunc['db_free_result']($request);
+		return $idReportTopic;
+	}
+
+	public function setReportStatus($data) {
+		global $smcFunc;
+
+		if(empty($data['idReportTopic'])) {
+			$smcFunc['db_insert']('',
+			'{db_prefix}custom_report_mod',
+				array(
+					'id_report_topic' => 'int', 'id_msg' => 'int', 'id_topic' => 'int',
+				),
+				array(
+					$data['idReportTopic'], $data['msgId'], $data['topic'],
+				),
+			array('')
+			);
+		} else {
+			// Opps someone is making a reply, quickly mark this as unsolved
+			$smcFunc['db_query']('', '
+				UPDATE {db_prefix}custom_report_mod
+				SET solved = {int:is_solved}
+				WHERE id_report_topic = {int:topic}',
+				array(
+					'topic' => $data['idReportTopic'],
+					'is_solved' => 0,
+				)
+			);
+		}
+	}
 }
 
 ?>

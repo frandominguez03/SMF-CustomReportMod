@@ -117,23 +117,21 @@ class CustomReportCore {
 
 		// You must have the proper permissions!
 		isAllowedTo('report_any');
-
-		loadLanguage('Post');
-
 		// Make sure they aren't spamming.
 		spamProtection('reporttm');
 
-		require_once($sourcedir . '/Subs-Post.php');
+		// Check their session.
+		checkSession('request', '', true);
 
 		if(empty($modSettings['cr_report_board']))
 			fatal_lang_error('cr_rtm_noboard');
 
+		loadLanguage('Post');
+		require_once($sourcedir . '/Subs-Post.php');
+
 		// No errors, yet.
 		$post_errors = array();
-
-		// Check their session.
-		if (checkSession('post', '', false) != '')
-		$post_errors[] = 'session_timeout';	
+		$msgId = (int) $_POST['msg'];
 
 		// Make sure we have a comment and it's clean.
 		if (!isset($_POST['comment']) || $smcFunc['htmltrim']($_POST['comment']) === '')
@@ -190,43 +188,21 @@ class CustomReportCore {
 			foreach ($post_errors as $post_error)
 				$context['post_errors'][] = $txt['error_' . $post_error];
 
-			return ReportToModerator();
+			return ReportToModerator2();
 		}
 
 		// Get the basic topic information, and make sure they can see it.
-		$_POST['msg'] = (int) $_POST['msg'];
+		$message = $this->dbInstance->canSeeTopic(array(
+			'topic' => $topic,
+			'msg' => $msgId
+		));
 
-		$request = $smcFunc['db_query']('', '
-			SELECT m.id_topic, m.subject, m.body, m.id_member AS id_poster, m.poster_name, mem.real_name, m.poster_time
-			FROM {db_prefix}messages AS m
-				LEFT JOIN {db_prefix}members AS mem ON (m.id_member = mem.id_member)
-			WHERE m.id_msg = {int:id_msg}
-				AND m.id_topic = {int:current_topic}
-			LIMIT 1',
-			array(
-				'current_topic' => $topic,
-				'id_msg' => $_POST['msg'],
-			)
-		);
-		if ($smcFunc['db_num_rows']($request) == 0)
-			fatal_lang_error('no_board', false);
-		$message = $smcFunc['db_fetch_assoc']($request);
-		$smcFunc['db_free_result']($request);
-
-		$request = $smcFunc['db_query']('', '
-			SELECT c.id_report_topic, c.id_msg, c.id_topic
-			FROM {db_prefix}custom_report_mod AS c
-			WHERE c.id_msg = {int:id_msg}
-			AND c.id_topic = {int:current_topic}
-			LIMIT 1',
-			array(
-				'id_msg' => $_POST['msg'],
-				'current_topic' => $topic,
-			)
-		);
-		if ($smcFunc['db_num_rows']($request) > 0)
-			list ($context['report_mod']['id_report_topic'], $context['report_mod']['id_msg'], $context['report_mod']['id_topic']) = $smcFunc['db_fetch_row']($request);
-		$smcFunc['db_free_result']($request);
+		// is post already reported
+		$idReportTopic = $this->dbInstance->isAlreadyReported(array(
+			'topic' => $topic,
+			'msg' => $msgId
+		));
+		// list ($context['report_mod']['id_report_topic'], $context['report_mod']['id_msg'], $context['report_mod']['id_topic']) = $smcFunc['db_fetch_row']($request);
 
 		// Get the poster and reporter names
 		$poster_name = un_htmlspecialchars($message['real_name']);
@@ -238,8 +214,8 @@ class CustomReportCore {
 		$body = $txt['cr_post_report_board'] . ' : ' . $reporterName . '<br /><br />' .
 			$txt['cr_post_made_by'] . ' : ' . $message['real_name'] . ' ' . $txt['at'] . ' ' . timeformat($message['poster_time']) . '<br /><br />' .
 
-			(!empty($modSettings['cr_quote_reported_post']) ? '[quote author=' . $poster_name . ' link=topic=' . $topic . '.msg' . $_POST['msg'] . '#msg' . $_POST['msg'] . ' date=' . $message['poster_time'] . ']' . "\n" . rtrim($message['body']) . "\n" . '[/quote]' :
-			'<a href="'. $scripturl .  '?topic=' . $topic . '.msg' . $_POST['msg'] . '#msg' . $_POST['msg'] .'" target="_blank">' . $txt['post_link'] . '</a><br /><br />') .
+			(!empty($modSettings['cr_quote_reported_post']) ? '[quote author=' . $poster_name . ' link=topic=' . $topic . '.msg' . $msgId . '#msg' . $msgId . ' date=' . $message['poster_time'] . ']' . "\n" . rtrim($message['body']) . "\n" . '[/quote]' :
+			'<a href="'. $scripturl .  '?topic=' . $topic . '.msg' . $msgId . '#msg' . $msgId .'" target="_blank">' . $txt['post_link'] . '</a><br /><br />') .
 
 			'<br />' . $txt['report_comment'] . ' : ' . '<br />' .
 			$poster_comment;
@@ -257,7 +233,7 @@ class CustomReportCore {
 			'approved' => true,
 		);
 		$topicOptions = array(
-			'id' => empty($context['report_mod']['id_report_topic']) ? 0 : $context['report_mod']['id_report_topic'],
+			'id' => $idReportTopic,
 			'board' => $modSettings['cr_report_board'],
 			'poll' => null,
 			'lock_mode' => 0,
@@ -275,35 +251,15 @@ class CustomReportCore {
 		// And at last make a post, yeyy :P!
 		createPost($msgOptions, $topicOptions, $posterOptions);
 
-		if(empty($context['report_mod']['id_msg']))
-		{
-			$smcFunc['db_insert']('',
-			'{db_prefix}custom_report_mod',
-				array(
-					'id_report_topic' => 'int', 'id_msg' => 'int', 'id_topic' => 'int',
-				),
-				array(
-					$topicOptions['id'], $_POST['msg'], $topic,
-				),
-			array('')
-			);
-		}
-		// Opps someone is making a reply, quickly mark this as unsolved
-		else
-		{
-			$smcFunc['db_query']('', '
-				UPDATE {db_prefix}custom_report_mod
-				SET solved = {int:is_solved}
-				WHERE id_report_topic = {int:topic}',
-				array(
-					'topic' => $context['report_mod']['id_report_topic'],
-					'is_solved' => 0,
-				)
-			);
-		}
-		
+		// set update report status
+		$idReportTopic = $this->dbInstance->setReportStatus(array(
+			'idReportTopic' => $idReportTopic,
+			'topic' => $topic,
+			'msg' => $msgId
+		));
+
 		// Back to the post we reported!
-		redirectexit('reportsent;topic=' . $topic . '.msg' . $_POST['msg'] . '#msg' . $_POST['msg']);
+		redirectexit('reportsent;topic=' . $topic . '.msg' . $msgId . '#msg' . $msgId);
 	}
 }
 
