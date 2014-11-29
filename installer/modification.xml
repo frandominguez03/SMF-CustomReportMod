@@ -51,7 +51,7 @@
 		ReportToModerator2();]]></search>
 			<add><![CDATA[if ((isset($_POST[$context['session_var']]) || isset($_POST['submit'])) && empty($context['post_errors'])) {
 		if(!empty($modSettings['cr_enable_mod'])) {
-			CustomReport::$CustomReportUtils->CustomReportToModerator2();
+			CustomReport::$CustomReportCore->CustomReportToModerator2();
 		} else {
 			ReportToModerator2();
 		}
@@ -113,14 +113,14 @@
 			<add><![CDATA[		// A button to be used by moderators only.
 		if(($message['id'] == $context['first_message']) && $context['report_solved']['showButton'])
 		echo '
-								<em><a href="', $scripturl, '?action=report_solved;topic=' . $context['current_topic'] . '">', $context['report_solved']['text'], '</a></em>';
+								<em><a href="', $scripturl, '?action=report_solved;topic=' . $context['current_topic'] . ';' . $context['session_var'] . '=' . $context['session_id'] . '">', $context['report_solved']['text'], '</a></em>';
 
 ]]></add>
 		</operation>
 		<operation>
 			<search position="replace"><![CDATA[		if ($context['can_report_moderator'])
 ]]></search>
-			<add><![CDATA[		if ($context['can_report_moderator'] && ($context['current_board'] != $modSettings['report_board_id']))
+			<add><![CDATA[		if ($context['can_report_moderator'] && ($context['current_board'] != $modSettings['cr_report_board']))
 ]]></add>
 		</operation>
 	</file>

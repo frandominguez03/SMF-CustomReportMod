@@ -178,7 +178,7 @@ class CustomReportDB {
 					'id_report_topic' => 'int', 'id_msg' => 'int', 'id_topic' => 'int',
 				),
 				array(
-					$data['idReportTopic'], $data['msg'], $data['topic'],
+					$data['newTopicId'], $data['msg'], $data['topic'],
 				),
 			array('')
 			);

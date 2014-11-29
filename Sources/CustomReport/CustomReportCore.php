@@ -252,6 +252,7 @@ class CustomReportCore {
 
 		// set update report status
 		$this->dbInstance->setReportStatus(array(
+			'newTopicId' => $topicOptions['id'],
 			'idReportTopic' => $idReportTopic,
 			'topic' => $topic,
 			'msg' => $msgId
