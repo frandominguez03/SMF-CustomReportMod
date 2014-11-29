@@ -61,7 +61,7 @@
 		<operation>
 			<search position="before"><![CDATA[	$context['comment_body'] = !isset($_POST['comment']) ? '' : trim($_POST['comment']);
 	$context['email_address'] = !isset($_POST['email']) ? '' : trim($_POST['email']);]]></search>
-			<add><![CDATA[	
+			<add><![CDATA[
 	// Ask the name from guests if custom report mod is enabled.
 	if(!empty($modSettings['cr_enable_mod']))
 	$context['guestname'] = !isset($_POST['guestname']) ? '' : trim($_POST['guestname']);]]></add>

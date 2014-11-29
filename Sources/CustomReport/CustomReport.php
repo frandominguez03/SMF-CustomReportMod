@@ -51,8 +51,8 @@ class CustomReport {
 	public static function getInstance() {
 		if (self::$instance === null) {
 			self::$instance = new CustomReport();
-			loadLanguage('CustomReport');
 			self::loadClass('CustomReportCore');
+			loadLanguage('CustomReport');
 		}
 		return self::$instance;
 	}

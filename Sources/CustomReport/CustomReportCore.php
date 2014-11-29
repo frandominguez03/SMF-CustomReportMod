@@ -46,8 +46,8 @@ class CustomReportCore {
 
 		$result = $this->dbInstance->checkIsTopicSolved($topicId);
 		if(empty($result['solved'])) {
-			$subject = '[' .$txt['report_solved'] . ']'. ' ' . $result['subject'];
-			$body = $txt['report_solved'] . ' ' . $txt['by'] . ' ' . '\''. $user_info['name'] . '\'';
+			$subject = '[' .$txt['cr_report_solved'] . ']'. ' ' . $result['subject'];
+			$body = $txt['cr_report_solved'] . ' ' . $txt['by'] . ' ' . '\''. $user_info['name'] . '\'';
 
 			$msgOptions = array(
 				'subject' => $subject,
@@ -73,6 +73,9 @@ class CustomReportCore {
 			'isSolved' => $isSolved,
 			'topicId' => $topicId
 		));
+
+		// Back to the post we reported!
+		redirectexit('topic=' . $topicId . '.0');
 	}
 
 	public function checkSolveStatus($topicId) {
@@ -85,9 +88,9 @@ class CustomReportCore {
 			return $data;
 		}
 
-		$isTopicSolved = $this->$dbInstance->checkIsTopicSolved($topicId);
+		$isTopicSolved = $this->dbInstance->checkIsTopicSolved($topicId);
 		$data = array(
-			'text' => empty($isTopicSolved['solved']) ? '[' . $txt['report_solved']. ']' : '[' . $txt['report_unsolved']. ']',
+			'text' => empty($isTopicSolved['solved']) ? '[' . $txt['cr_report_solved']. ']' : '[' . $txt['cr_report_unsolved']. ']',
 			'showButton' => true
 		);
 		return $data;
@@ -115,7 +118,7 @@ class CustomReportCore {
 		// You must have the proper permissions!
 		isAllowedTo('report_any');
 
-		loadLanguage('Post');	
+		loadLanguage('Post');
 
 		// Make sure they aren't spamming.
 		spamProtection('reporttm');
@@ -123,7 +126,7 @@ class CustomReportCore {
 		require_once($sourcedir . '/Subs-Post.php');
 
 		if(empty($modSettings['cr_report_board']))
-		fatal_lang_error('rtm_noboard');
+			fatal_lang_error('cr_rtm_noboard');
 
 		// No errors, yet.
 		$post_errors = array();
@@ -232,10 +235,12 @@ class CustomReportCore {
 		//Content for report post in the report board.
 		$subject = $txt['reported_post'] . ' : ' . $message['subject'];
 
-		$body = $txt['post_report_board'] . ' : ' . $reporterName . '<br /><br />' .
-			$txt['post_made_by'] . ' : ' . $message['real_name'] . ' ' . $txt['at'] . ' ' . timeformat($message['poster_time']) . '<br /><br />' .
+		$body = $txt['cr_post_report_board'] . ' : ' . $reporterName . '<br /><br />' .
+			$txt['cr_post_made_by'] . ' : ' . $message['real_name'] . ' ' . $txt['at'] . ' ' . timeformat($message['poster_time']) . '<br /><br />' .
+
 			(!empty($modSettings['cr_quote_reported_post']) ? '[quote author=' . $poster_name . ' link=topic=' . $topic . '.msg' . $_POST['msg'] . '#msg' . $_POST['msg'] . ' date=' . $message['poster_time'] . ']' . "\n" . rtrim($message['body']) . "\n" . '[/quote]' :
 			'<a href="'. $scripturl .  '?topic=' . $topic . '.msg' . $_POST['msg'] . '#msg' . $_POST['msg'] .'" target="_blank">' . $txt['post_link'] . '</a><br /><br />') .
+
 			'<br />' . $txt['report_comment'] . ' : ' . '<br />' .
 			$poster_comment;
 
