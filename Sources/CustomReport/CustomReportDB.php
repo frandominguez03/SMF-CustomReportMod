@@ -147,18 +147,21 @@ class CustomReportDB {
 	}
 
 	public function isAlreadyReported($data) {
-		global $smcFunc;
+		global $smcFunc, $modSettings;
 
 		$idReportTopic = 0;
 		$request = $smcFunc['db_query']('', '
 			SELECT c.id_report_topic
-			FROM {db_prefix}custom_report_mod AS c
+				FROM {db_prefix}custom_report_mod AS c
+			INNER JOIN {db_prefix}topics AS t ON (t.id_topic = c.id_report_topic)
 			WHERE c.id_msg = {int:id_msg}
-			AND c.id_topic = {int:current_topic}
+				AND c.id_topic = {int:current_topic}
+				AND t.id_board = {int:cr_report_board}
 			LIMIT 1',
 			array(
 				'id_msg' => $data['msg'],
 				'current_topic' => $data['topic'],
+				'cr_report_board' => $modSettings['cr_report_board']
 			)
 		);
 		if ($smcFunc['db_num_rows']($request) > 0)
