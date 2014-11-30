@@ -33,9 +33,9 @@
 global $txt;
 
 // General mod strings
-$txt['cr_post_made_by'] = 'Post made by';
+$txt['cr_post_created_by'] = 'Created by';
 
-$txt['cr_post_report_board'] = 'Reported by';
+$txt['cr_post_reported_by'] = 'Reported by';
 $txt['cr_post_link'] = 'Post Link';
 $txt['cr_report_solved'] = 'Mark Solved';
 $txt['cr_report_unsolved'] = 'Mark Unsolved';
