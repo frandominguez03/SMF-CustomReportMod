@@ -174,37 +174,7 @@ class CustomReportCore {
 		));
 
 		$this->createReportContent();
-
-		// set up all options
-		$msgOptions = array(
-			'id' => 0,
-			'subject' => $this->post_data['subject'],
-			'body' => $this->post_data['body'],
-			'icon' => 'xx',
-			'smileys_enabled' => true,
-			'attachments' => array(),
-			'approved' => true,
-		);
-		$topicOptions = array(
-			'id' => $this->post_data['id_report_topic'],
-			'board' => $modSettings['cr_report_board'],
-			'poll' => null,
-			'lock_mode' => 0,
-			'sticky_mode' => null,
-			'mark_as_read' => false,
-			'is_approved' => true
-		);
-		$posterOptions = array(
-			'id' => $user_info['id'],
-			'name' => $this->poster_data['reporter_name'],
-			'email' => $user_info['email'],
-			'update_post_count' => !$user_info['is_guest'] && !empty($modSettings['cr_enable_report_count']) && $board_info['posts_count'],
-		);
-
-		// And at last make a post, yeyy :P!
-		createPost($msgOptions, $topicOptions, $posterOptions);
-
-		$this->post_data['newTopicId'] = $topicOptions['id'];
+		$this->createReport();
 
 		// set update report status
 		$this->dbInstance->setReportStatus(array(
@@ -309,6 +279,40 @@ class CustomReportCore {
 
 		$this->post_data['body'] .= $this->addPreviousReports();
 		preparsecode($this->post_data['body']);
+	}
+
+	private function createReport() {
+		global $modSettings, $user_info, $board_info;
+
+		// set up all options
+		$msgOptions = array(
+			'id' => 0,
+			'subject' => $this->post_data['subject'],
+			'body' => $this->post_data['body'],
+			'icon' => 'xx',
+			'smileys_enabled' => true,
+			'attachments' => array(),
+			'approved' => true,
+		);
+		$topicOptions = array(
+			'id' => $this->post_data['id_report_topic'],
+			'board' => $modSettings['cr_report_board'],
+			'poll' => null,
+			'lock_mode' => 0,
+			'sticky_mode' => null,
+			'mark_as_read' => false,
+			'is_approved' => true
+		);
+		$posterOptions = array(
+			'id' => $user_info['id'],
+			'name' => $this->poster_data['reporter_name'],
+			'email' => $user_info['email'],
+			'update_post_count' => !$user_info['is_guest'] && !empty($modSettings['cr_enable_report_count']) && $board_info['posts_count'],
+		);
+
+		// And at last make a post, yeyy :P!
+		createPost($msgOptions, $topicOptions, $posterOptions);
+		$this->post_data['newTopicId'] = $topicOptions['id'];
 	}
 
 	private function addPreviousReports() {
