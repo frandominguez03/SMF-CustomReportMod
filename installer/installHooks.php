@@ -2,7 +2,7 @@
 
 /**
 * @package manifest file for Custom Report Mod
-* @version 1.4
+* @version 2.0
 * @author Joker (http://www.simplemachines.org/community/index.php?action=profile;u=226111)
 * @copyright Copyright (c) 2014, Siddhartha Gupta
 * @license http://www.mozilla.org/MPL/MPL-1.1.html
