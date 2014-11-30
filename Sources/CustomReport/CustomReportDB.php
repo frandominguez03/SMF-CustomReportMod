@@ -171,6 +171,30 @@ class CustomReportDB {
 		return $idReportTopic;
 	}
 
+	public function getOldReports($data) {
+		global $smcFunc, $modSettings;
+
+		$prevReported = array();
+		$request = $smcFunc['db_query']('', '
+			SELECT c.id_report_topic
+				FROM {db_prefix}custom_report_mod AS c
+			INNER JOIN {db_prefix}topics AS t ON (t.id_topic = c.id_report_topic)
+			WHERE c.id_msg = {int:id_msg}
+				AND c.id_topic = {int:current_topic}
+				AND t.id_board != {int:cr_report_board}',
+			array(
+				'id_msg' => $data['msg'],
+				'current_topic' => $data['topic'],
+				'cr_report_board' => $modSettings['cr_report_board']
+			)
+		);
+		while ($row = $smcFunc['db_fetch_assoc']($request)) {
+			$prevReported[] = $row['id_report_topic'];
+		}
+		$smcFunc['db_free_result']($request);
+		return $prevReported;
+	}
+
 	public function setReportStatus($data) {
 		global $smcFunc;
 

@@ -69,6 +69,8 @@ $txt['cr_permission_settings'] = 'Permission Settings';
 $txt['cr_permission_settings_desc'] = 'You can make all group based permission settings for custom reports mod from here.';
 $txt['cr_perm_cr_can_solve_report'] = 'Groups can mark reported topic solved';
 
+$txt['cr_previous_reports'] = 'Report';
+$txt['cr_previous_reports_txt'] = 'Previous reports on the same post';
 $txt['cr_submit'] = 'Submit';
 
 ?>
