@@ -113,7 +113,7 @@ class CustomReportCore {
 	}
 
 	public function CustomReportToModerator2() {
-		global $txt, $scripturl, $topic, $board, $board_info, $user_info, $modSettings, $sourcedir, $smcFunc, $context;
+		global $txt, $scripturl, $topic, $board, $board_info, $user_info, $modSettings, $sourcedir, $smcFunc, $context, $language;
 
 		// You must have the proper permissions!
 		isAllowedTo('report_any');
@@ -259,7 +259,7 @@ class CustomReportCore {
 		));
 
 		if(empty($modSettings['cr_email_moderators'])) {
-			$real_mods = $this->dbInstance->getBoardModerator(array(
+			$real_mods = $this->dbInstance->getBoardModerators(array(
 				'board' => $board,
 			));
 
