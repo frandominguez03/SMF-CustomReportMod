@@ -35,6 +35,9 @@ if (!defined('SMF'))
 
 class CustomReportCore {
 	private $dbInstance;
+	private $post_errors;
+	private $poster_data;
+	private $post_data;
 
 	public function __construct() {
 		CustomReport::loadClass('CustomReportDB');
@@ -112,8 +115,8 @@ class CustomReportCore {
 		return true;
 	}
 
-	public function CustomReportToModerator2() {
-		global $txt, $scripturl, $topic, $board, $board_info, $user_info, $modSettings, $sourcedir, $smcFunc, $context, $language;
+	private function validateUser() {
+		global $modSettings, $sourcedir;
 
 		// You must have the proper permissions!
 		isAllowedTo('report_any');
@@ -128,45 +131,57 @@ class CustomReportCore {
 
 		loadLanguage('Post');
 		require_once($sourcedir . '/Subs-Post.php');
+	}
 
-		// No errors, yet.
-		$post_errors = array();
-		$msgId = (int) $_POST['msg'];
-
-		// Make sure we have a comment and it's clean.
-		if (!isset($_POST['comment']) || $smcFunc['htmltrim']($_POST['comment']) === '')
-			$post_errors[] = 'no_comment';
-		$poster_comment = $smcFunc['htmlspecialchars']($_POST['comment'], ENT_QUOTES);
+	private function setUserInfo() {
+		global $user_info, $sourcedir, $txt;
 
 		// Guests need to provide their name and email address!
-		if ($user_info['is_guest'])
-		{
-			$_POST['guestname'] = !isset($_POST['guestname']) ? '' : trim($_POST['guestname']);
-			$_POST['email'] = !isset($_POST['email']) ? '' : trim($_POST['email']);
+		if ($user_info['is_guest']) {
+			$this->poster_data['username'] = !isset($_POST['guestname']) ? '' : trim($_POST['guestname']);
+			$this->poster_data['email'] = !isset($_POST['email']) ? '' : trim($_POST['email']);
 
 			// Validate the name.
-			if (!isset($_POST['guestname']) || trim(strtr($_POST['guestname'], '_', ' ')) == '')
-				$post_errors[] = 'no_name';
-			elseif ($smcFunc['strlen']($_POST['guestname']) > 25)
-				$post_errors[] = 'long_name';
-			else
-			{
+			if (!isset($this->poster_data['username']) || trim(strtr($this->poster_data['username'], '_', ' ')) == '') {
+				$this->post_errors[] = 'no_name';
+			} elseif ($smcFunc['strlen']($_POST['guestname']) > 25) {
+				$this->post_errors[] = 'long_name';
+			} else {
 				require_once($sourcedir . '/Subs-Members.php');
-				if (isReservedName(htmlspecialchars($_POST['guestname']), 0, true, false))
-					$post_errors[] = 'bad_name';
+				if (isReservedName(htmlspecialchars($this->poster_data['username']), 0, true, false))
+					$this->post_errors[] = 'bad_name';
 			}
 
 			// Validate the email.
-			if ($_POST['email'] === '')
-				$post_errors[] = 'no_email';
-			elseif (preg_match('~^[0-9A-Za-z=_+\-/][0-9A-Za-z=_\'+\-/\.]*@[\w\-]+(\.[\w\-]+)*(\.[\w]{2,6})$~', $_POST['email']) == 0)
-				$post_errors[] = 'bad_email';
-
-			isBannedEmail($_POST['email'], 'cannot_post', sprintf($txt['you_are_post_banned'], $txt['guest_title']));
-
-			$user_info['email'] = htmlspecialchars($_POST['email']);
+			if ($this->poster_data['email'] === '') {
+				$this->post_errors[] = 'no_email';
+			} elseif (preg_match('~^[0-9A-Za-z=_+\-/][0-9A-Za-z=_\'+\-/\.]*@[\w\-]+(\.[\w\-]+)*(\.[\w]{2,6})$~', $this->poster_data['email']) == 0) {
+				$this->post_errors[] = 'bad_email';
+			}
+			isBannedEmail($this->poster_data['email'], 'cannot_post', sprintf($txt['you_are_post_banned'], $txt['guest_title']));
+			$user_info['email'] = htmlspecialchars($this->poster_data['email']);
 		}
+	}
 
+	public function CustomReportToModerator2() {
+		global $txt, $scripturl, $topic, $board, $board_info, $user_info, $modSettings, $sourcedir, $smcFunc, $context, $language;
+
+		$this->validateUser();
+
+		// No errors, yet.
+		$this->post_errors = array();
+		$this->poster_data = array();
+		$this->post_data = array();
+
+		$this->post_data['msgId'] = (int) $_POST['msg'];
+
+		// Make sure we have a comment and it's clean.
+		if (!isset($_POST['comment']) || $smcFunc['htmltrim']($_POST['comment']) === '')
+			$this->post_errors[] = 'no_comment';
+
+		$this->post_data = $smcFunc['htmlspecialchars']($_POST['comment'], ENT_QUOTES);
+
+		$this->setUserInfo();
 		// Could they get the right verification code?
 		if ($user_info['is_guest'] && !empty($modSettings['guests_report_require_captcha']))
 		{
@@ -176,16 +191,16 @@ class CustomReportCore {
 			);
 			$context['require_verification'] = create_control_verification($verificationOptions, true);
 			if (is_array($context['require_verification']))
-				$post_errors = array_merge($post_errors, $context['require_verification']);
+				$this->post_errors = array_merge($this->post_errors, $context['require_verification']);
 		}
 
 		// Any errors?
-		if (!empty($post_errors))
+		if (!empty($this->post_errors))
 		{
 			loadLanguage('Errors');
 
 			$context['post_errors'] = array();
-			foreach ($post_errors as $post_error)
+			foreach ($this->post_errors as $post_error)
 				$context['post_errors'][] = $txt['error_' . $post_error];
 
 			return ReportToModerator2();
