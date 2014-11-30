@@ -155,7 +155,7 @@ class CustomReportCore {
 		));
 
 		// is post already reported
-		$idReportTopic = $this->dbInstance->isAlreadyReported(array(
+		$this->post_data['id_report_topic'] = $this->dbInstance->isAlreadyReported(array(
 			'topic' => $this->post_data['topicId'],
 			'msg' => $this->post_data['msgId']
 		));
@@ -177,20 +177,20 @@ class CustomReportCore {
 			'<br />' . $txt['report_comment'] . ' : ' . '<br />' .
 			$this->post_data['comment'];
 
-		preparsecode($body);
+		preparsecode($this->post_data['body']);
 
 		// set up all options
 		$msgOptions = array(
 			'id' => 0,
-			'subject' => $subject,
-			'body' => $body,
+			'subject' => $this->post_data['subject'],
+			'body' => $this->post_data['body'],
 			'icon' => 'xx',
 			'smileys_enabled' => true,
 			'attachments' => array(),
 			'approved' => true,
 		);
 		$topicOptions = array(
-			'id' => $idReportTopic,
+			'id' => $this->post_data['id_report_topic'],
 			'board' => $modSettings['cr_report_board'],
 			'poll' => null,
 			'lock_mode' => 0,
@@ -208,45 +208,19 @@ class CustomReportCore {
 		// And at last make a post, yeyy :P!
 		createPost($msgOptions, $topicOptions, $posterOptions);
 
+		$this->post_data['newTopicId'] = $topicOptions['id'];
+
 		// set update report status
 		$this->dbInstance->setReportStatus(array(
-			'newTopicId' => $topicOptions['id'],
-			'idReportTopic' => $idReportTopic,
-			'topic' => $topic,
-			'msg' => $msgId
+			'newTopicId' => $this->post_data['newTopicId'],
+			'idReportTopic' => $this->post_data['id_report_topic'],
+			'topic' => $this->post_data['topicId'],
+			'msg' => $this->post_data['msgId']
 		));
 
-		if(empty($modSettings['cr_email_moderators'])) {
-			$real_mods = $this->dbInstance->getBoardModerators(array(
-				'board' => $board,
-			));
-
-			$replacements = array(
-				'TOPICSUBJECT' => $subject,
-				'POSTERNAME' => $poster_name,
-				'REPORTERNAME' => $this->poster_data['reporter_name'],
-				'TOPICLINK' => $scripturl . '?topic=' . $topic . '.msg' . $msgId . '#msg' . $msgId,
-				'REPORTLINK' => !empty($topicOptions['id']) ? $scripturl . '?topic=' . $topicOptions['id'] : '',
-				'COMMENT' => $_POST['comment'],
-			);
-
-			foreach ($real_mods as $key => $value) {
-				// Maybe they don't want to know?!
-				if (!empty($value['mod_prefs'])) {
-					list(,, $pref_binary) = explode('|', $value['mod_prefs']);
-
-				if (!($pref_binary & 1) && (!($pref_binary & 2)))
-						continue;
-				}
-
-				$emaildata = loadEmailTemplate('report_to_moderator', $replacements, empty($value['lngfile']) || empty($modSettings['userLanguage']) ? $language : $value['lngfile']);
-
-				// Send it to the moderator.
-				sendmail($value['email_address'], $emaildata['subject'], $emaildata['body'], $user_info['email'], null, false, 2);
-			}
-		}
+		$this->sendEmailsToMods();
 		// Back to the post we reported!
-		redirectexit('reportsent;topic=' . $topic . '.msg' . $msgId . '#msg' . $msgId);
+		redirectexit('reportsent;topic=' . $this->post_data['topicId'] . '.msg' . $this->post_data['msgId'] . '#msg' . $this->post_data['msgId']);
 	}
 
 	private function validateUser() {
@@ -309,6 +283,40 @@ class CustomReportCore {
 			$context['require_verification'] = create_control_verification($verificationOptions, true);
 			if (is_array($context['require_verification']))
 				$this->post_errors = array_merge($this->post_errors, $context['require_verification']);
+		}
+	}
+
+	private function sendEmailsToMods() {
+		global $modSettings, $language;
+
+		if(empty($modSettings['cr_email_moderators'])) {
+			$real_mods = $this->dbInstance->getBoardModerators(array(
+				'board' => $board,
+			));
+
+			$replacements = array(
+				'TOPICSUBJECT' => $this->post_data['subject'],
+				'POSTERNAME' => $this->post_data['poster_name'],
+				'REPORTERNAME' => $this->poster_data['reporter_name'],
+				'TOPICLINK' => $scripturl . '?topic=' . $this->post_data['topicId'] . '.msg' . $this->post_data['msgId'] . '#msg' . $this->post_data['msgId'],
+				'REPORTLINK' => !empty($this->post_data['newTopicId']) ? $scripturl . '?topic=' . $this->post_data['newTopicId'] : '',
+				'COMMENT' => $this->post_data['comment'],
+			);
+
+			foreach ($real_mods as $key => $value) {
+				// Maybe they don't want to know?!
+				if (!empty($value['mod_prefs'])) {
+					list(,, $pref_binary) = explode('|', $value['mod_prefs']);
+
+				if (!($pref_binary & 1) && (!($pref_binary & 2)))
+						continue;
+				}
+
+				$emaildata = loadEmailTemplate('report_to_moderator', $replacements, empty($value['lngfile']) || empty($modSettings['userLanguage']) ? $language : $value['lngfile']);
+
+				// Send it to the moderator.
+				sendmail($value['email_address'], $emaildata['subject'], $emaildata['body'], $user_info['email'], null, false, 2);
+			}
 		}
 	}
 }
