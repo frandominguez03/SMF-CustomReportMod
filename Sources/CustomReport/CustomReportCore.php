@@ -300,7 +300,7 @@ class CustomReportCore {
 	private function sendEmailsToMods() {
 		global $modSettings, $language, $scripturl, $user_info;
 
-		if(empty($modSettings['cr_email_moderators'])) {
+		if(isset($modSettings['cr_email_moderators']) && !empty($modSettings['cr_email_moderators'])) {
 			$real_mods = $this->dbInstance->getBoardModerators(array(
 				'board' => $this->post_data['boardId'],
 			));

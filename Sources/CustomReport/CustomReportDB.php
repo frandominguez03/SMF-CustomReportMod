@@ -204,10 +204,10 @@ class CustomReportDB {
 
 		$real_mods = array();
 		$request = $smcFunc['db_query']('', '
-			SELECT mod.id_member, mem.email_address, mem.lngfile, mem.mod_prefs
-			FROM {db_prefix}moderators as mod
-			INNER JOIN {db_prefix}members AS mem ON (mem.id_member = m.id_member)
-			WHERE mod.id_board = {int:current_board}
+			SELECT mods.id_member, mem.email_address, mem.lngfile, mem.mod_prefs
+			FROM {db_prefix}moderators as mods
+			INNER JOIN {db_prefix}members AS mem ON (mem.id_member = mods.id_member)
+			WHERE mods.id_board = {int:current_board}
 				AND mem.notify_types != {int:notify_types}
 			ORDER BY lngfile',
 			array(
