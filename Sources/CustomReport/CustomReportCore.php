@@ -163,6 +163,21 @@ class CustomReportCore {
 		}
 	}
 
+	private function captchaVerification() {
+		global $user_info, $modSettings, $sourcedir, $context;
+
+		// Could they get the right verification code?
+		if ($user_info['is_guest'] && !empty($modSettings['guests_report_require_captcha'])) {
+			require_once($sourcedir . '/Subs-Editor.php');
+			$verificationOptions = array(
+				'id' => 'report',
+			);
+			$context['require_verification'] = create_control_verification($verificationOptions, true);
+			if (is_array($context['require_verification']))
+				$this->post_errors = array_merge($this->post_errors, $context['require_verification']);
+		}
+	}
+
 	public function CustomReportToModerator2() {
 		global $txt, $scripturl, $topic, $board, $board_info, $user_info, $modSettings, $sourcedir, $smcFunc, $context, $language;
 
@@ -182,17 +197,7 @@ class CustomReportCore {
 		$this->post_data = $smcFunc['htmlspecialchars']($_POST['comment'], ENT_QUOTES);
 
 		$this->setUserInfo();
-		// Could they get the right verification code?
-		if ($user_info['is_guest'] && !empty($modSettings['guests_report_require_captcha']))
-		{
-			require_once($sourcedir . '/Subs-Editor.php');
-			$verificationOptions = array(
-				'id' => 'report',
-			);
-			$context['require_verification'] = create_control_verification($verificationOptions, true);
-			if (is_array($context['require_verification']))
-				$this->post_errors = array_merge($this->post_errors, $context['require_verification']);
-		}
+		$this->captchaVerification();
 
 		// Any errors?
 		if (!empty($this->post_errors))
@@ -203,7 +208,7 @@ class CustomReportCore {
 			foreach ($this->post_errors as $post_error)
 				$context['post_errors'][] = $txt['error_' . $post_error];
 
-			return ReportToModerator2();
+			return $this->CustomReportToModerator2();
 		}
 
 		// Get the basic topic information, and make sure they can see it.
