@@ -116,7 +116,7 @@ class CustomReportCore {
 	}
 
 	public function CustomReportToModerator2() {
-		global $txt, $scripturl, $topic, $board, $board_info, $user_info, $modSettings, $sourcedir, $smcFunc, $context, $language;
+		global $txt, $scripturl, $topic, $board, $board_info, $user_info, $modSettings, $smcFunc, $context;
 
 		$this->validateUser();
 
@@ -127,6 +127,7 @@ class CustomReportCore {
 
 		$this->post_data['msgId'] = (int) $_POST['msg'];
 		$this->post_data['topicId'] = $topic;
+		$this->post_data['boardId'] = $board;
 
 		// Make sure we have a comment and it's clean.
 		if (!isset($_POST['comment']) || $smcFunc['htmltrim']($_POST['comment']) === '')
@@ -171,7 +172,7 @@ class CustomReportCore {
 		$this->post_data['body'] = $txt['cr_post_report_board'] . ' : ' . $this->poster_data['reporter_name'] . '<br /><br />' .
 			$txt['cr_post_made_by'] . ' : ' . $this->post_data['poster_name'] . ' ' . $txt['at'] . ' ' . timeformat($this->post_data['poster_time']) . '<br /><br />' .
 
-			(!empty($modSettings['cr_quote_reported_post']) ? '[quote author=' . $poster_name . ' link=topic=' . $topic . '.msg' . $msgId . '#msg' . $msgId . ' date=' . $this->post_data['poster_time'] . ']' . "\n" . rtrim($message['body']) . "\n" . '[/quote]' :
+			(!empty($modSettings['cr_quote_reported_post']) ? '[quote author=' . $this->post_data['poster_name'] . ' link=topic=' . $topic . '.msg' . $this->post_data['msgId'] . '#msg' . $this->post_data['msgId'] . ' date=' . $this->post_data['poster_time'] . ']' . "\n" . rtrim($message['body']) . "\n" . '[/quote]' :
 			'<a href="'. $scripturl .  '?topic=' . $this->post_data['topicId'] . '.msg' . $this->post_data['msgId'] . '#msg' . $this->post_data['msgId'] .'" target="_blank">' . $txt['post_link'] . '</a><br /><br />') .
 
 			'<br />' . $txt['report_comment'] . ' : ' . '<br />' .
@@ -287,11 +288,11 @@ class CustomReportCore {
 	}
 
 	private function sendEmailsToMods() {
-		global $modSettings, $language;
+		global $modSettings, $language, $scripturl, $user_info;
 
 		if(empty($modSettings['cr_email_moderators'])) {
 			$real_mods = $this->dbInstance->getBoardModerators(array(
-				'board' => $board,
+				'board' => $this->post_data['boardId'],
 			));
 
 			$replacements = array(
