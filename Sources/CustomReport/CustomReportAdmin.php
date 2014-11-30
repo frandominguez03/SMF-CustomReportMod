@@ -53,7 +53,8 @@ class CustomReportAdmin {
 			array('check', 'cr_quote_reported_post', 'subtext' => $txt['cr_quote_reported_post_info']),
 			array('check', 'cr_enable_report_count', 'subtext' => $txt['cr_enable_report_count_info']),
 			array('check', 'cr_enable_report_mod_count', 'subtext' => $txt['cr_enable_report_mod_count_info']),
-			array('check', 'cr_enable_large_report_field', 'subtext' => $txt['cr_enable_large_report_field_info'])
+			array('check', 'cr_enable_large_report_field', 'subtext' => $txt['cr_enable_large_report_field_info']),
+			array('check', 'cr_email_moderators', 'subtext' => $txt['cr_email_moderators_info']),
 		);
 
 		$context['page_title'] = $txt['cr_admin_panel'];
@@ -77,7 +78,8 @@ class CustomReportAdmin {
 			array('check', 'cr_quote_reported_post'),
 			array('check', 'cr_enable_report_count'),
 			array('check', 'cr_enable_report_mod_count'),
-			array('check', 'cr_enable_large_report_field')
+			array('check', 'cr_enable_large_report_field'),
+			array('check', 'cr_email_moderators'),
 		);
 
 		require_once($sourcedir . '/ManageServer.php');

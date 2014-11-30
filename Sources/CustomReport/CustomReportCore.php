@@ -113,7 +113,7 @@ class CustomReportCore {
 	}
 
 	public function CustomReportToModerator2() {
-		global $txt, $scripturl, $topic, $board_info, $user_info, $modSettings, $sourcedir, $smcFunc, $context;
+		global $txt, $scripturl, $topic, $board, $board_info, $user_info, $modSettings, $sourcedir, $smcFunc, $context;
 
 		// You must have the proper permissions!
 		isAllowedTo('report_any');
@@ -258,6 +258,35 @@ class CustomReportCore {
 			'msg' => $msgId
 		));
 
+		if(empty($modSettings['cr_email_moderators'])) {
+			$real_mods = $this->dbInstance->getBoardModerator(array(
+				'board' => $board,
+			));
+
+			$replacements = array(
+				'TOPICSUBJECT' => $subject,
+				'POSTERNAME' => $poster_name,
+				'REPORTERNAME' => $reporterName,
+				'TOPICLINK' => $scripturl . '?topic=' . $topic . '.msg' . $msgId . '#msg' . $msgId,
+				'REPORTLINK' => !empty($topicOptions['id']) ? $scripturl . '?topic=' . $topicOptions['id'] : '',
+				'COMMENT' => $_POST['comment'],
+			);
+
+			foreach ($real_mods as $key => $value) {
+				// Maybe they don't want to know?!
+				if (!empty($value['mod_prefs'])) {
+					list(,, $pref_binary) = explode('|', $value['mod_prefs']);
+
+				if (!($pref_binary & 1) && (!($pref_binary & 2)))
+						continue;
+				}
+
+				$emaildata = loadEmailTemplate('report_to_moderator', $replacements, empty($value['lngfile']) || empty($modSettings['userLanguage']) ? $language : $value['lngfile']);
+
+				// Send it to the moderator.
+				sendmail($value['email_address'], $emaildata['subject'], $emaildata['body'], $user_info['email'], null, false, 2);
+			}
+		}
 		// Back to the post we reported!
 		redirectexit('reportsent;topic=' . $topic . '.msg' . $msgId . '#msg' . $msgId);
 	}

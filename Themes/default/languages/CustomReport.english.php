@@ -62,6 +62,8 @@ $txt['cr_enable_report_mod_count'] = 'Count the post when moderator solves a rep
 $txt['cr_enable_report_mod_count_info'] = 'Raises the post count of moderators when they solve a report.';
 $txt['cr_enable_large_report_field'] = 'Use bigger input field for writing reports';
 $txt['cr_enable_large_report_field_info'] = 'Instead of single line, it gives you are large text area while reporting posts';
+$txt['cr_email_moderators'] = 'Send email to moderators';
+$txt['cr_email_moderators_info'] = 'Send email to board moderators when a post is reported';
 
 $txt['cr_permission_settings'] = 'Permission Settings';
 $txt['cr_permission_settings_desc'] = 'You can make all group based permission settings for custom reports mod from here.';
