@@ -272,9 +272,9 @@ class CustomReportCore {
 		$this->post_data['subject'] = $txt['reported_post'] . ' : ' . $this->post_data['org_subject'];
 
 		// http://localhost/forum/smf2/index.php?action=profile;u=1
-		$this->post_data['body'] = '<a href="'. $scripturl .  '?topic=' . $this->post_data['topicId'] . '.msg' . $this->post_data['msgId'] . '#msg' . $this->post_data['msgId'] .'" target="_blank">' . $txt['cr_post_link'] . '</a><br />';
+		$this->post_data['body'] = '[url='. $scripturl .  '?topic=' . $this->post_data['topicId'] . '.msg' . $this->post_data['msgId'] . '#msg' . $this->post_data['msgId'] .']' . $txt['cr_post_link'] . '[/url]<br />';
 
-		$this->post_data['body'] .= $txt['cr_post_created_by'] . ': <a href="'. $scripturl .  '?action=profile;u=' . $this->post_data['org_id_poster'] .'" target="_blank">' . $this->post_data['poster_name'] . '</a> ' . $txt['at'] . ' ' . timeformat($this->post_data['poster_time']) . '<br /><br />';
+		$this->post_data['body'] .= $txt['cr_post_created_by'] . ': [url='. $scripturl .  '?action=profile;u=' . $this->post_data['org_id_poster'] .']' . $this->post_data['poster_name'] . '[/url] ' . $txt['at'] . ' ' . timeformat($this->post_data['poster_time']) . '<br /><br />';
 
 		if (!empty($modSettings['cr_quote_reported_post'])) {
 			$this->post_data['body'] .= '[quote author=' . $this->post_data['poster_name'] . ' link=topic=' . $this->post_data['topicId'] . '.msg' . $this->post_data['msgId'] . '#msg' . $this->post_data['msgId'] . ' date=' . $this->post_data['poster_time'] . ']' . "\n" . rtrim($this->post_data['org_body']) . "\n" . '[/quote]<br /><br />';
@@ -326,7 +326,7 @@ class CustomReportCore {
 			$prev_reported = '<br /><br />'. $txt['cr_previous_reports_txt'];
 
 			foreach ($this->poster_data['prev_reported'] as $value) {
-				$prev_reported .= '<br /><a href="'. $scripturl .  '?topic=' . $value .'">'. $txt['cr_previous_reports']. '</a>';
+				$prev_reported .= '<br />[url='. $scripturl .  '?topic=' . $value .']'. $txt['cr_previous_reports']. '[/url]';
 			}
 		}
 		return $prev_reported;

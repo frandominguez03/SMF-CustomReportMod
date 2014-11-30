@@ -6,6 +6,8 @@
 - A separate admin interface for easy access and maintainance
 - Added option to 'Send email to moderators'
 - Major fix for reporting a post after last reported post was deleted
+- Table cleanup if the topic containing the report is permanently deleted
+- History management with the reports that are being moved to other board
 - Cleaner report content
 - Handling removal of topics
 - Permissions fixes through out the codebase
