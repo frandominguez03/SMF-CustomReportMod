@@ -243,32 +243,42 @@ class CustomReportCore {
 	}
 
 	private function setUserInfo() {
-		global $user_info, $sourcedir, $txt, $smcFunc;
+		global $user_info, $txt;
 
 		// Guests need to provide their name and email address!
 		if ($user_info['is_guest']) {
 			$this->poster_data['reporter_name'] = !isset($_POST['guestname']) ? '' : trim($_POST['guestname']);
 			$this->poster_data['email'] = !isset($_POST['email']) ? '' : trim($_POST['email']);
 
-			// Validate the name.
-			if (!isset($this->poster_data['reporter_name']) || trim(strtr($this->poster_data['reporter_name'], '_', ' ')) == '') {
-				$this->post_errors[] = 'no_name';
-			} elseif ($smcFunc['strlen']($_POST['guestname']) > 25) {
-				$this->post_errors[] = 'long_name';
-			} else {
-				require_once($sourcedir . '/Subs-Members.php');
-				if (isReservedName(htmlspecialchars($this->poster_data['reporter_name']), 0, true, false))
-					$this->post_errors[] = 'bad_name';
-			}
+			$this->validateName();
+			$this->validateEmail();
 
-			// Validate the email.
-			if ($this->poster_data['email'] === '') {
-				$this->post_errors[] = 'no_email';
-			} elseif (preg_match('~^[0-9A-Za-z=_+\-/][0-9A-Za-z=_\'+\-/\.]*@[\w\-]+(\.[\w\-]+)*(\.[\w]{2,6})$~', $this->poster_data['email']) == 0) {
-				$this->post_errors[] = 'bad_email';
-			}
 			isBannedEmail($this->poster_data['email'], 'cannot_post', sprintf($txt['you_are_post_banned'], $txt['guest_title']));
 			$user_info['email'] = htmlspecialchars($this->poster_data['email']);
+		}
+	}
+
+	private function validateName() {
+		global $smcFunc, $sourcedir;
+
+		// Validate the name.
+		if (!isset($this->poster_data['reporter_name']) || trim(strtr($this->poster_data['reporter_name'], '_', ' ')) == '') {
+			$this->post_errors[] = 'no_name';
+		} elseif ($smcFunc['strlen']($this->poster_data['reporter_name']) > 25) {
+			$this->post_errors[] = 'long_name';
+		} else {
+			require_once($sourcedir . '/Subs-Members.php');
+			if (isReservedName(htmlspecialchars($this->poster_data['reporter_name']), 0, true, false))
+				$this->post_errors[] = 'bad_name';
+		}
+	}
+
+	private function validateEmail() {
+		// Validate the email.
+		if ($this->poster_data['email'] === '') {
+			$this->post_errors[] = 'no_email';
+		} elseif (preg_match('~^[0-9A-Za-z=_+\-/][0-9A-Za-z=_\'+\-/\.]*@[\w\-]+(\.[\w\-]+)*(\.[\w]{2,6})$~', $this->poster_data['email']) == 0) {
+			$this->post_errors[] = 'bad_email';
 		}
 	}
 
