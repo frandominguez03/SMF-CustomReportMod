@@ -38,6 +38,7 @@ class CustomReportCore {
 	private $post_errors;
 	private $poster_data;
 	private $post_data;
+	private $replacements;
 
 	public function __construct() {
 		CustomReport::loadClass('CustomReportDB');
@@ -116,7 +117,7 @@ class CustomReportCore {
 	}
 
 	public function CustomReportToModerator2() {
-		global $txt, $scripturl, $topic, $board, $board_info, $user_info, $modSettings, $smcFunc, $context;
+		global $txt, $topic, $board, $user_info, $smcFunc, $context;
 
 		$this->validateUser();
 
@@ -185,7 +186,7 @@ class CustomReportCore {
 			'msg' => $this->post_data['msgId']
 		));
 
-		$this->sendEmailsToMods();
+		$this->processEmails();
 		// Back to the post we reported!
 		redirectexit('reportsent;topic=' . $this->post_data['topicId'] . '.msg' . $this->post_data['msgId'] . '#msg' . $this->post_data['msgId']);
 	}
@@ -331,15 +332,15 @@ class CustomReportCore {
 		return $prev_reported;
 	}
 
-	private function sendEmailsToMods() {
-		global $modSettings, $language, $scripturl, $user_info;
+	private function processEmails() {
+		global $modSettings, $scripturl;
 
 		if(isset($modSettings['cr_email_moderators']) && !empty($modSettings['cr_email_moderators'])) {
 			$real_mods = $this->dbInstance->getBoardModerators(array(
 				'board' => $this->post_data['boardId'],
 			));
 
-			$replacements = array(
+			$this->replacements = array(
 				'TOPICSUBJECT' => $this->post_data['subject'],
 				'POSTERNAME' => $this->post_data['poster_name'],
 				'REPORTERNAME' => $this->poster_data['reporter_name'],
@@ -349,20 +350,26 @@ class CustomReportCore {
 			);
 
 			foreach ($real_mods as $key => $value) {
-				// Maybe they don't want to know?!
-				if (!empty($value['mod_prefs'])) {
-					list(,, $pref_binary) = explode('|', $value['mod_prefs']);
-
-				if (!($pref_binary & 1) && (!($pref_binary & 2)))
-						continue;
-				}
-
-				$emaildata = loadEmailTemplate('report_to_moderator', $replacements, empty($value['lngfile']) || empty($modSettings['userLanguage']) ? $language : $value['lngfile']);
-
-				// Send it to the moderator.
-				sendmail($value['email_address'], $emaildata['subject'], $emaildata['body'], $user_info['email'], null, false, 2);
+				sendEmailToMod($value);
 			}
 		}
+	}
+
+	private function sendEmailToMod($value) {
+		global $modSettings, $language, $user_info;
+
+		// Maybe they don't want to know?!
+		if (!empty($value['mod_prefs'])) {
+			list(,, $pref_binary) = explode('|', $value['mod_prefs']);
+
+		if (!($pref_binary & 1) && (!($pref_binary & 2)))
+			return false;
+		}
+
+		$emaildata = loadEmailTemplate('report_to_moderator', $this->replacements, empty($value['lngfile']) || empty($modSettings['userLanguage']) ? $language : $value['lngfile']);
+
+		// Send it to the moderator.
+		sendmail($value['email_address'], $emaildata['subject'], $emaildata['body'], $user_info['email'], null, false, 2);
 	}
 
 	// Remove topic from custom report table
