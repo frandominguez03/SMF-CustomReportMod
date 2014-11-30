@@ -115,6 +115,140 @@ class CustomReportCore {
 		return true;
 	}
 
+	public function CustomReportToModerator2() {
+		global $txt, $scripturl, $topic, $board, $board_info, $user_info, $modSettings, $sourcedir, $smcFunc, $context, $language;
+
+		$this->validateUser();
+
+		// No errors, yet.
+		$this->post_errors = array();
+		$this->poster_data = array();
+		$this->post_data = array();
+
+		$this->post_data['msgId'] = (int) $_POST['msg'];
+		$this->post_data['topicId'] = $topic;
+
+		// Make sure we have a comment and it's clean.
+		if (!isset($_POST['comment']) || $smcFunc['htmltrim']($_POST['comment']) === '')
+			$this->post_errors[] = 'no_comment';
+
+		$this->post_data['comment'] = $smcFunc['htmlspecialchars']($_POST['comment'], ENT_QUOTES);
+
+		$this->setUserInfo();
+		$this->captchaVerification();
+
+		// Any errors?
+		if (!empty($this->post_errors)) {
+			loadLanguage('Errors');
+
+			$context['post_errors'] = array();
+			foreach ($this->post_errors as $post_error)
+				$context['post_errors'][] = $txt['error_' . $post_error];
+
+			return $this->CustomReportToModerator2();
+		}
+
+		// Get the basic topic information, and make sure they can see it.
+		$message = $this->dbInstance->canSeeTopic(array(
+			'topic' => $this->post_data['topicId'],
+			'msg' => $this->post_data['msgId']
+		));
+
+		// is post already reported
+		$idReportTopic = $this->dbInstance->isAlreadyReported(array(
+			'topic' => $this->post_data['topicId'],
+			'msg' => $this->post_data['msgId']
+		));
+
+		// Get the poster and reporter names
+		$this->post_data['poster_name'] = un_htmlspecialchars($message['real_name']);
+		$this->post_data['poster_time'] = $message['poster_time'];
+		$this->poster_data['reporter_name'] = un_htmlspecialchars(!$user_info['is_guest'] ? $user_info['name'] : $_POST['guestname']);
+
+		//Content for report post in the report board.
+		$this->post_data['subject'] = $txt['reported_post'] . ' : ' . $message['subject'];
+
+		$this->post_data['body'] = $txt['cr_post_report_board'] . ' : ' . $this->poster_data['reporter_name'] . '<br /><br />' .
+			$txt['cr_post_made_by'] . ' : ' . $this->post_data['poster_name'] . ' ' . $txt['at'] . ' ' . timeformat($this->post_data['poster_time']) . '<br /><br />' .
+
+			(!empty($modSettings['cr_quote_reported_post']) ? '[quote author=' . $poster_name . ' link=topic=' . $topic . '.msg' . $msgId . '#msg' . $msgId . ' date=' . $this->post_data['poster_time'] . ']' . "\n" . rtrim($message['body']) . "\n" . '[/quote]' :
+			'<a href="'. $scripturl .  '?topic=' . $this->post_data['topicId'] . '.msg' . $this->post_data['msgId'] . '#msg' . $this->post_data['msgId'] .'" target="_blank">' . $txt['post_link'] . '</a><br /><br />') .
+
+			'<br />' . $txt['report_comment'] . ' : ' . '<br />' .
+			$this->post_data['comment'];
+
+		preparsecode($body);
+
+		// set up all options
+		$msgOptions = array(
+			'id' => 0,
+			'subject' => $subject,
+			'body' => $body,
+			'icon' => 'xx',
+			'smileys_enabled' => true,
+			'attachments' => array(),
+			'approved' => true,
+		);
+		$topicOptions = array(
+			'id' => $idReportTopic,
+			'board' => $modSettings['cr_report_board'],
+			'poll' => null,
+			'lock_mode' => 0,
+			'sticky_mode' => null,
+			'mark_as_read' => false,
+			'is_approved' => true
+		);
+		$posterOptions = array(
+			'id' => $user_info['id'],
+			'name' => $this->poster_data['reporter_name'],
+			'email' => $user_info['email'],
+			'update_post_count' => !$user_info['is_guest'] && !empty($modSettings['cr_enable_report_count']) && $board_info['posts_count'],
+		);
+
+		// And at last make a post, yeyy :P!
+		createPost($msgOptions, $topicOptions, $posterOptions);
+
+		// set update report status
+		$this->dbInstance->setReportStatus(array(
+			'newTopicId' => $topicOptions['id'],
+			'idReportTopic' => $idReportTopic,
+			'topic' => $topic,
+			'msg' => $msgId
+		));
+
+		if(empty($modSettings['cr_email_moderators'])) {
+			$real_mods = $this->dbInstance->getBoardModerators(array(
+				'board' => $board,
+			));
+
+			$replacements = array(
+				'TOPICSUBJECT' => $subject,
+				'POSTERNAME' => $poster_name,
+				'REPORTERNAME' => $this->poster_data['reporter_name'],
+				'TOPICLINK' => $scripturl . '?topic=' . $topic . '.msg' . $msgId . '#msg' . $msgId,
+				'REPORTLINK' => !empty($topicOptions['id']) ? $scripturl . '?topic=' . $topicOptions['id'] : '',
+				'COMMENT' => $_POST['comment'],
+			);
+
+			foreach ($real_mods as $key => $value) {
+				// Maybe they don't want to know?!
+				if (!empty($value['mod_prefs'])) {
+					list(,, $pref_binary) = explode('|', $value['mod_prefs']);
+
+				if (!($pref_binary & 1) && (!($pref_binary & 2)))
+						continue;
+				}
+
+				$emaildata = loadEmailTemplate('report_to_moderator', $replacements, empty($value['lngfile']) || empty($modSettings['userLanguage']) ? $language : $value['lngfile']);
+
+				// Send it to the moderator.
+				sendmail($value['email_address'], $emaildata['subject'], $emaildata['body'], $user_info['email'], null, false, 2);
+			}
+		}
+		// Back to the post we reported!
+		redirectexit('reportsent;topic=' . $topic . '.msg' . $msgId . '#msg' . $msgId);
+	}
+
 	private function validateUser() {
 		global $modSettings, $sourcedir;
 
@@ -134,21 +268,21 @@ class CustomReportCore {
 	}
 
 	private function setUserInfo() {
-		global $user_info, $sourcedir, $txt;
+		global $user_info, $sourcedir, $txt, $smcFunc;
 
 		// Guests need to provide their name and email address!
 		if ($user_info['is_guest']) {
-			$this->poster_data['username'] = !isset($_POST['guestname']) ? '' : trim($_POST['guestname']);
+			$this->poster_data['reporter_name'] = !isset($_POST['guestname']) ? '' : trim($_POST['guestname']);
 			$this->poster_data['email'] = !isset($_POST['email']) ? '' : trim($_POST['email']);
 
 			// Validate the name.
-			if (!isset($this->poster_data['username']) || trim(strtr($this->poster_data['username'], '_', ' ')) == '') {
+			if (!isset($this->poster_data['reporter_name']) || trim(strtr($this->poster_data['reporter_name'], '_', ' ')) == '') {
 				$this->post_errors[] = 'no_name';
 			} elseif ($smcFunc['strlen']($_POST['guestname']) > 25) {
 				$this->post_errors[] = 'long_name';
 			} else {
 				require_once($sourcedir . '/Subs-Members.php');
-				if (isReservedName(htmlspecialchars($this->poster_data['username']), 0, true, false))
+				if (isReservedName(htmlspecialchars($this->poster_data['reporter_name']), 0, true, false))
 					$this->post_errors[] = 'bad_name';
 			}
 
@@ -176,139 +310,6 @@ class CustomReportCore {
 			if (is_array($context['require_verification']))
 				$this->post_errors = array_merge($this->post_errors, $context['require_verification']);
 		}
-	}
-
-	public function CustomReportToModerator2() {
-		global $txt, $scripturl, $topic, $board, $board_info, $user_info, $modSettings, $sourcedir, $smcFunc, $context, $language;
-
-		$this->validateUser();
-
-		// No errors, yet.
-		$this->post_errors = array();
-		$this->poster_data = array();
-		$this->post_data = array();
-
-		$this->post_data['msgId'] = (int) $_POST['msg'];
-
-		// Make sure we have a comment and it's clean.
-		if (!isset($_POST['comment']) || $smcFunc['htmltrim']($_POST['comment']) === '')
-			$this->post_errors[] = 'no_comment';
-
-		$this->post_data = $smcFunc['htmlspecialchars']($_POST['comment'], ENT_QUOTES);
-
-		$this->setUserInfo();
-		$this->captchaVerification();
-
-		// Any errors?
-		if (!empty($this->post_errors))
-		{
-			loadLanguage('Errors');
-
-			$context['post_errors'] = array();
-			foreach ($this->post_errors as $post_error)
-				$context['post_errors'][] = $txt['error_' . $post_error];
-
-			return $this->CustomReportToModerator2();
-		}
-
-		// Get the basic topic information, and make sure they can see it.
-		$message = $this->dbInstance->canSeeTopic(array(
-			'topic' => $topic,
-			'msg' => $msgId
-		));
-
-		// is post already reported
-		$idReportTopic = $this->dbInstance->isAlreadyReported(array(
-			'topic' => $topic,
-			'msg' => $msgId
-		));
-
-		// Get the poster and reporter names
-		$poster_name = un_htmlspecialchars($message['real_name']);
-		$reporterName = un_htmlspecialchars(!$user_info['is_guest'] ? $user_info['name'] : $_POST['guestname']);
-
-		//Content for report post in the report board.
-		$subject = $txt['reported_post'] . ' : ' . $message['subject'];
-
-		$body = $txt['cr_post_report_board'] . ' : ' . $reporterName . '<br /><br />' .
-			$txt['cr_post_made_by'] . ' : ' . $message['real_name'] . ' ' . $txt['at'] . ' ' . timeformat($message['poster_time']) . '<br /><br />' .
-
-			(!empty($modSettings['cr_quote_reported_post']) ? '[quote author=' . $poster_name . ' link=topic=' . $topic . '.msg' . $msgId . '#msg' . $msgId . ' date=' . $message['poster_time'] . ']' . "\n" . rtrim($message['body']) . "\n" . '[/quote]' :
-			'<a href="'. $scripturl .  '?topic=' . $topic . '.msg' . $msgId . '#msg' . $msgId .'" target="_blank">' . $txt['post_link'] . '</a><br /><br />') .
-
-			'<br />' . $txt['report_comment'] . ' : ' . '<br />' .
-			$poster_comment;
-
-		preparsecode($body);
-
-		// set up all options
-		$msgOptions = array(
-			'id' => 0,
-			'subject' => $subject,
-			'body' => $body,
-			'icon' => 'xx',
-			'smileys_enabled' => true,
-			'attachments' => array(),
-			'approved' => true,
-		);
-		$topicOptions = array(
-			'id' => $idReportTopic,
-			'board' => $modSettings['cr_report_board'],
-			'poll' => null,
-			'lock_mode' => 0,
-			'sticky_mode' => null,
-			'mark_as_read' => false,
-			'is_approved' => true
-		);
-		$posterOptions = array(
-			'id' => $user_info['id'],
-			'name' => $reporterName,
-			'email' => $user_info['email'],
-			'update_post_count' => !$user_info['is_guest'] && !empty($modSettings['cr_enable_report_count']) && $board_info['posts_count'],
-		);
-
-		// And at last make a post, yeyy :P!
-		createPost($msgOptions, $topicOptions, $posterOptions);
-
-		// set update report status
-		$this->dbInstance->setReportStatus(array(
-			'newTopicId' => $topicOptions['id'],
-			'idReportTopic' => $idReportTopic,
-			'topic' => $topic,
-			'msg' => $msgId
-		));
-
-		if(empty($modSettings['cr_email_moderators'])) {
-			$real_mods = $this->dbInstance->getBoardModerators(array(
-				'board' => $board,
-			));
-
-			$replacements = array(
-				'TOPICSUBJECT' => $subject,
-				'POSTERNAME' => $poster_name,
-				'REPORTERNAME' => $reporterName,
-				'TOPICLINK' => $scripturl . '?topic=' . $topic . '.msg' . $msgId . '#msg' . $msgId,
-				'REPORTLINK' => !empty($topicOptions['id']) ? $scripturl . '?topic=' . $topicOptions['id'] : '',
-				'COMMENT' => $_POST['comment'],
-			);
-
-			foreach ($real_mods as $key => $value) {
-				// Maybe they don't want to know?!
-				if (!empty($value['mod_prefs'])) {
-					list(,, $pref_binary) = explode('|', $value['mod_prefs']);
-
-				if (!($pref_binary & 1) && (!($pref_binary & 2)))
-						continue;
-				}
-
-				$emaildata = loadEmailTemplate('report_to_moderator', $replacements, empty($value['lngfile']) || empty($modSettings['userLanguage']) ? $language : $value['lngfile']);
-
-				// Send it to the moderator.
-				sendmail($value['email_address'], $emaildata['subject'], $emaildata['body'], $user_info['email'], null, false, 2);
-			}
-		}
-		// Back to the post we reported!
-		redirectexit('reportsent;topic=' . $topic . '.msg' . $msgId . '#msg' . $msgId);
 	}
 }
 
