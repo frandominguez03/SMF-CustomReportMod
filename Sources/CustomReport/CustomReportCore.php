@@ -357,6 +357,13 @@ class CustomReportCore {
 			}
 		}
 	}
+
+	// Remove topic from custom report table
+	public function removeTopics($topics) {
+		if(isset($topics) && !empty($topics)) {
+			$this->dbInstance->removeTopics($topics);
+		}
+	}
 }
 
 ?>

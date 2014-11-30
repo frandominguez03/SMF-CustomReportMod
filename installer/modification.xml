@@ -44,7 +44,16 @@
 ]]></add>
 		</operation>
 	</file>
-	
+
+	<file name="$sourcedir/RemoveTopic.php">
+		<operation>
+			<search position="before"><![CDATA[// Delete anything related to the topic.
+]]></search>
+			<add><![CDATA[	CustomReport::$CustomReportCore->removeTopics($topics);
+]]></add>
+		</operation>
+	</file>
+
 	<file name="$sourcedir/SendTopic.php">
 		<operation>
 			<search position="replace"><![CDATA[if ((isset($_POST[$context['session_var']]) || isset($_POST['submit'])) && empty($context['post_errors']))
