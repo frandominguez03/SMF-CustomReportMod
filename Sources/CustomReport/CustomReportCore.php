@@ -165,8 +165,8 @@ class CustomReportCore {
 		$this->post_data['poster_name'] = un_htmlspecialchars($message['real_name']);
 		$this->post_data['poster_time'] = $message['poster_time'];
 		$this->poster_data['reporter_name'] = un_htmlspecialchars(!$user_info['is_guest'] ? $user_info['name'] : $_POST['guestname']);
-		$this->poster_data['subject'] = $message['subject'];
-		$this->poster_data['body'] = $message['body'];
+		$this->post_data['subject'] = $message['subject'];
+		$this->post_data['body'] = $message['body'];
 
 		$this->poster_data['prev_reported'] = $this->dbInstance->getOldReports(array(
 			'topic' => $this->post_data['topicId'],
@@ -301,7 +301,7 @@ class CustomReportCore {
 		$this->post_data['body'] = $txt['cr_post_report_board'] . ' : ' . $this->poster_data['reporter_name'] . '<br /><br />' .
 			$txt['cr_post_made_by'] . ' : ' . $this->post_data['poster_name'] . ' ' . $txt['at'] . ' ' . timeformat($this->post_data['poster_time']) . '<br /><br />' .
 
-			(!empty($modSettings['cr_quote_reported_post']) ? '[quote author=' . $this->post_data['poster_name'] . ' link=topic=' . $topic . '.msg' . $this->post_data['msgId'] . '#msg' . $this->post_data['msgId'] . ' date=' . $this->post_data['poster_time'] . ']' . "\n" . rtrim($this->post_data['body']) . "\n" . '[/quote]' :
+			(!empty($modSettings['cr_quote_reported_post']) ? '[quote author=' . $this->post_data['poster_name'] . ' link=topic=' . $this->post_data['topicId'] . '.msg' . $this->post_data['msgId'] . '#msg' . $this->post_data['msgId'] . ' date=' . $this->post_data['poster_time'] . ']' . "\n" . rtrim($this->post_data['body']) . "\n" . '[/quote]' :
 			'<a href="'. $scripturl .  '?topic=' . $this->post_data['topicId'] . '.msg' . $this->post_data['msgId'] . '#msg' . $this->post_data['msgId'] .'" target="_blank">' . $txt['post_link'] . '</a><br /><br />') .
 
 			'<br />' . $txt['report_comment'] . ' : ' . '<br />' .
