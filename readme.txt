@@ -3,9 +3,9 @@
 This mod will add custom option about reporting to moderators. By default in SMF 2.0 branch whenever someone reports a post to moderator a report is created in moderation center, but after installing this mod and making required changes in admin panel reports will be posted in topics in the specified board.
 
 
-[b][i]Admin interface[/i][/b] - ?action=admin;area=customreport
+[b][i]Admin interface[/i][/b]
 
-[i]General Settings[/i]
+[i]General Settings[/i] - ?action=admin;area=customreport
 - Enable disable the mod with a single click - If the admin hasn't enable this option the default report section of moderation center will be used.
 - Board id to create post report.
 - Quote the content of reported post.
