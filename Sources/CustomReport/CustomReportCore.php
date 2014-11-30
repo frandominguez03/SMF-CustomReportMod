@@ -350,7 +350,7 @@ class CustomReportCore {
 			);
 
 			foreach ($real_mods as $key => $value) {
-				sendEmailToMod($value);
+				$this->sendEmailToMod($value);
 			}
 		}
 	}
