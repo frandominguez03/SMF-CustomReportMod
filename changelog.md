@@ -1,6 +1,10 @@
 **Change Log**
 
 
+*Version 2.0.1*
+- Mofdification xml naming fix
+
+
 *Version 2.0*
 - PHP files converted to OOP, easy code management and readability
 - A separate admin interface for easy access and maintainance
