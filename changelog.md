@@ -1,8 +1,12 @@
 **Change Log**
 
 
+*Version 2.0.2*
+- Permission fix to mark report solved
+
+
 *Version 2.0.1*
-- Mofdification xml naming fix
+- Modification xml naming fix
 
 
 *Version 2.0*
