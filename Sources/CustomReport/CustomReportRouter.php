@@ -85,15 +85,43 @@ class CustomReportRouter {
 		global $topic, $sourcedir;
 
 		// Make all the checks
-		isAllowedTo('can_solve_report');
-		checkSession('request', '', true);
-		checkSubmitOnce('check');
+		if(self::isAllowedTo('cr_can_solve_report')) {
+			checkSession('request', '', true);
+			checkSubmitOnce('check');
 
-		loadLanguage('Post');
-		require_once($sourcedir . '/Subs-Post.php');
-		CustomReport::loadClass('CustomReportCore');
+			loadLanguage('Post');
+			require_once($sourcedir . '/Subs-Post.php');
+			CustomReport::loadClass('CustomReportCore');
+			CustomReport::$CustomReportCore->reportSolved($topic);
+		}
+	}
 
-		CustomReport::$CustomReportCore->reportSolved($topic);
+	private static function isAllowedTo($permission) {
+		global $user_info, $modSettings;
+
+		if ($user_info['is_admin']) {
+			return true;
+		}
+
+		if ($user_info['is_guest']) {
+			return false;
+		} else {
+			$result = true;
+			$permToCheck = $modSettings[$permission];
+
+			if (!isset($modSettings[$permission]) || strlen($modSettings[$permission]) === 0) {
+				$result = false;
+			} else {
+				$allowedGroups = explode(',', $modSettings[$permission]);
+				$groupsPassed = array_intersect($allowedGroups, $user_info['groups']);
+
+				if (empty($groupsPassed)) {
+					$result = false;
+					break;
+				}
+			}
+			return $result;
+		}
 	}
 }
 
