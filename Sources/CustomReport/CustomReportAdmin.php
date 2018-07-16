@@ -2,9 +2,10 @@
 
 /**
 * @package manifest file for Custom Report Mod
-* @version 2.0.1
-* @author Joker (http://www.simplemachines.org/community/index.php?action=profile;u=226111)
-* @copyright Copyright (c) 2014, Siddhartha Gupta
+* @author Joker (http://www.simplemachines.org/community/index.php?action=profile;u=226111), original author
+* @author Francisco "d3vcho" Domínguez (https://www.simplemachines.org/community/index.php?action=profile;u=422971)
+* @copyright Copyright (c) 2018, Francisco Domínguez
+* @version 2.0.2
 * @license http://www.mozilla.org/MPL/MPL-1.1.html
 */
 

@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <!DOCTYPE package-info SYSTEM "http://www.simplemachines.org/xml/package-info">
 <package-info xmlns="http://www.simplemachines.org/xml/package-info" xmlns:smf="http://www.simplemachines.org/">
-	<id>sid2varun:customreportmod</id>
+	<id>d3vcho:customreportmod</id>
 	<name>Custom Report Mod</name>
 	<version>2.0.2</version>
 	<type>modification</type>
