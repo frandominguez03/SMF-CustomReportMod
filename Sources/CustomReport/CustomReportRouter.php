@@ -5,7 +5,7 @@
 * @author Joker (http://www.simplemachines.org/community/index.php?action=profile;u=226111), original author
 * @author Francisco "d3vcho" Domínguez (https://www.simplemachines.org/community/index.php?action=profile;u=422971)
 * @copyright Copyright (c) 2018, Francisco Domínguez
-* @version 2.0.2
+* @version 2.0.3
 * @license http://www.mozilla.org/MPL/MPL-1.1.html
 */
 
@@ -73,7 +73,7 @@ function routeCustomReportAdmin() {
 
 	//wakey wakey, call the func you lazy
 	if (isset($_REQUEST['sa']) && isset($subActions[$_REQUEST['sa']]) && method_exists(CustomReport::$CustomReportAdmin, $subActions[$_REQUEST['sa']]))
-		return CustomReport::$CustomReportAdmin->$subActions[$_REQUEST['sa']]();
+		return CustomReport::$CustomReportAdmin->{$subActions[$_REQUEST['sa']]}();
 
 	// At this point we can just do our default.
 	CustomReport::$CustomReportAdmin->$defaultActionFunc();
@@ -106,19 +106,22 @@ class CustomReportRouter {
 
 		if ($user_info['is_guest']) {
 			return false;
-		} else {
+		}
+
+		else {
 			$result = true;
 			$permToCheck = $modSettings[$permission];
 
 			if (!isset($modSettings[$permission]) || strlen($modSettings[$permission]) === 0) {
 				$result = false;
-			} else {
+			}
+
+			else {
 				$allowedGroups = explode(',', $modSettings[$permission]);
 				$groupsPassed = array_intersect($allowedGroups, $user_info['groups']);
 
 				if (empty($groupsPassed)) {
 					$result = false;
-					break;
 				}
 			}
 			return $result;
