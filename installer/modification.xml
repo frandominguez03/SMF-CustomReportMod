@@ -6,7 +6,7 @@
 * @author Joker (http://www.simplemachines.org/community/index.php?action=profile;u=226111), original author
 * @author Francisco "d3vcho" Domínguez (https://www.simplemachines.org/community/index.php?action=profile;u=422971)
 * @copyright Copyright (c) 2018, Francisco Domínguez
-* @version 2.0.2
+* @version 2.0.3
 * @license http://www.mozilla.org/MPL/MPL-1.1.html
 */
 
@@ -35,8 +35,8 @@
 
 <modification xmlns="http://www.simplemachines.org/xml/modification" xmlns:smf="http://www.simplemachines.org/">
 	<id>sid2varun:customreportmod</id>
-	<version>2.0.2</version>
-	
+	<version>2.0.3</version>
+
 	<file name="$sourcedir/Display.php">
 		<operation>
 			<search position="before"><![CDATA[	$context['topic_last_message'] = $topicinfo['id_last_msg'];

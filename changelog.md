@@ -1,5 +1,7 @@
 **Change Log**
 
+*Version 2.0.3*
+- Fixed couple of bugs that caused the mod not to work
 
 *Version 2.0.2*
 - Permission fix to mark report solved
