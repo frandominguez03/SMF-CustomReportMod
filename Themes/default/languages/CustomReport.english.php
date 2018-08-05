@@ -38,16 +38,18 @@ $txt['cr_post_created_by'] = 'Created by';
 
 $txt['cr_post_reported_by'] = 'Reported by';
 $txt['cr_post_link'] = 'Post link';
-$txt['cr_report_solved'] = 'Mark as Solved';
-$txt['cr_report_unsolved'] = 'Mark as Unsolved';
+$txt['cr_solve_report'] = 'Mark as Solved';
+$txt['cr_unsolve_report'] = 'Mark as Unsolved';
+$txt['cr_report_solved'] = 'Marked as solved';
 
 $txt['cr_rtm_noboard'] = 'Admin forgot to create the report board.';
 
 // Permission Strings
-$txt['cr_permissionname_can_solve_report'] = 'Can mark reports as solved';
-$txt['cr_permissionhelp_can_solve_report'] = 'This will allow user to mark the reports as solved';
+$txt['cr_permission_settings'] = 'Permission Settings';
+$txt['cr_permission_settings_desc'] = 'You can change group based permission settings for Custom Reports Mod from here.';
+$txt['cr_perm_cr_can_solve_report'] = 'Groups that can mark reported topic as solved';
 
-$txt['cr_admin_panel_title'] = 'Custom Reports Mods';
+$txt['cr_admin_panel_title'] = 'Custom Reports Mod';
 $txt['cr_admin_panel'] = 'Custom Reports Mod Admin Panel';
 $txt['cr_general_settings'] = 'General Settings';
 $txt['cr_general_settings_desc'] = 'You can change all global settings for Custom Reports Mod from here';
@@ -62,13 +64,9 @@ $txt['cr_enable_report_count_info'] = 'Raises the post count of users when they 
 $txt['cr_enable_report_mod_count'] = 'Count the post when moderator solves a report';
 $txt['cr_enable_report_mod_count_info'] = 'Raises the post count of moderators when they solve a report';
 $txt['cr_enable_large_report_field'] = 'Use bigger input field for writing reports';
-$txt['cr_enable_large_report_field_info'] = 'Instead of single line, it gives you are larger text area while reporting posts';
+$txt['cr_enable_large_report_field_info'] = 'Instead of single line, it gives you a larger text area while reporting posts';
 $txt['cr_email_moderators'] = 'Send email to Moderators';
 $txt['cr_email_moderators_info'] = 'Sends email to board Moderators when a post is reported';
-
-$txt['cr_permission_settings'] = 'Permission Settings';
-$txt['cr_permission_settings_desc'] = 'You can make all group based permission settings for Custom Reports Mod from here.';
-$txt['cr_perm_cr_can_solve_report'] = 'Groups can mark reported topic solved';
 
 $txt['cr_previous_reports'] = 'Report';
 $txt['cr_previous_reports_txt'] = 'Previous reports on the same post';
