@@ -21,6 +21,8 @@
 		<remove-dir name="$sourcedir/CustomReport" />
 		<remove-file name="$themedir/CustomReportAdmin.template.php" />
 		<remove-file name="$languagedir/CustomReport.english.php" />
+		<remove-file name="$languagedir/CustomReport.russian.php" />
+		<remove-file name="$languagedir/CustomReport.russian-utf8.php" />
 		<modification reverse="true">installer/modification.xml</modification>
 		<redirect url="$scripturl?action=admin;area=packages;sa=browse" timeout="1000" />		
 	</uninstall>
