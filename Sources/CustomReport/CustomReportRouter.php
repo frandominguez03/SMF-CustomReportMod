@@ -112,12 +112,12 @@ class CustomReportRouter {
 			$result = true;
 			$permToCheck = $modSettings[$permission];
 
-			if (!isset($modSettings[$permission]) || strlen($modSettings[$permission]) === 0) {
+			if (!isset($permToCheck) || strlen($permToCheck) === 0) {
 				$result = false;
 			}
 
 			else {
-				$allowedGroups = explode(',', $modSettings[$permission]);
+				$allowedGroups = explode(',', $permToCheck);
 				$groupsPassed = array_intersect($allowedGroups, $user_info['groups']);
 
 				if (empty($groupsPassed)) {
