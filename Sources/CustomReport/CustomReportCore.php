@@ -269,13 +269,10 @@ class CustomReportCore {
 		global $txt, $modSettings, $scripturl;
 
 		//Content for report post in the report board.
-		$this->post_data['subject'] = '';
-		$this->post_data['subject'] = $txt['reported_post'] . ' : ' . $this->post_data['org_subject'];
+		$this->post_data['subject'] = $txt['reported_post'] . ': ' . $this->post_data['org_subject'];
 
-		// http://localhost/forum/smf2/index.php?action=profile;u=1
 		$this->post_data['body'] = '[url='. $scripturl .  '?topic=' . $this->post_data['topicId'] . '.msg' . $this->post_data['msgId'] . '#msg' . $this->post_data['msgId'] .']' . $txt['cr_post_link'] . '[/url]<br />';
-
-		$this->post_data['body'] .= $txt['cr_post_created_by'] . ': [url='. $scripturl .  '?action=profile;u=' . $this->post_data['org_id_poster'] .']' . $this->post_data['poster_name'] . '[/url] ' . $txt['at'] . ' ' . timeformat($this->post_data['poster_time']) . '<br /><br />';
+		$this->post_data['body'] .= $txt['cr_post_created_by'] . ': [url='. $scripturl .  '?action=profile;u=' . $this->post_data['org_id_poster'] .']' . $this->poster_data['reporter_name'] . '[/url]<br /> ';
 
 		if (!empty($modSettings['cr_quote_reported_post'])) {
 			$this->post_data['body'] .= '[quote author=' . $this->post_data['poster_name'] . ' link=topic=' . $this->post_data['topicId'] . '.msg' . $this->post_data['msgId'] . '#msg' . $this->post_data['msgId'] . ' date=' . $this->post_data['poster_time'] . ']' . "\n" . rtrim($this->post_data['org_body']) . "\n" . '[/quote]<br /><br />';
