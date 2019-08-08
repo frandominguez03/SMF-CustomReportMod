@@ -133,23 +133,15 @@ class CustomReportCore {
 
 		// Make sure we have a comment and it's clean.
 		if (!isset($_POST['comment']) || $smcFunc['htmltrim']($_POST['comment']) === '')
-			$this->post_errors[] = 'no_comment';
+			return fatal_error($txt['cr_error_no_comment'], false);
+
+		else if (strlen($smcFunc['htmltrim']($_POST['comment'])) < 15)
+			return fatal_error($txt['cr_error_short_comment'], false);
 
 		$this->post_data['comment'] = $smcFunc['htmlspecialchars']($_POST['comment'], ENT_QUOTES);
 
 		$this->setUserInfo();
 		$this->captchaVerification();
-
-		// Any errors?
-		if (!empty($this->post_errors)) {
-			loadLanguage('Errors');
-
-			$context['post_errors'] = array();
-			foreach ($this->post_errors as $post_error)
-				$context['post_errors'][] = $txt['error_' . $post_error];
-
-			return $this->CustomReportToModerator2();
-		}
 
 		// Get the basic topic information, and make sure they can see it.
 		$message = $this->dbInstance->canSeeTopic(array(
