@@ -119,11 +119,11 @@
 
 	<file name="$themedir/Display.template.php">
 		<operation>
-			<search position="after"><![CDATA[		// Maybe they want to report this post to the moderator(s)?]]></search>
+			<search position="after"><![CDATA[		// Can they reply? Have they turned on quick reply?]]></search>
 			<add><![CDATA[		// A button to be used by moderators only.
 		if(($message['id'] == $context['first_message']) && $context['report_solved']['showButton'])
 		echo '
-								<em><a href="', $scripturl, '?action=report_solved;topic=' . $context['current_topic'] . ';' . $context['session_var'] . '=' . $context['session_id'] . '">', $context['report_solved']['text'], '</a></em>';
+								<li class="approve_button"><a href="', $scripturl, '?action=report_solved;topic=' . $context['current_topic'] . ';' . $context['session_var'] . '=' . $context['session_id'] . '">', $context['report_solved']['text'], '</a></li>';
 
 ]]></add>
 		</operation>

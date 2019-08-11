@@ -95,7 +95,7 @@ class CustomReportCore {
 
 		$isTopicSolved = $this->dbInstance->checkIsTopicSolved($topicId);
 		$data = array(
-			'text' => empty($isTopicSolved['solved']) ? '[' . $txt['cr_solve_report']. ']' : '[' . $txt['cr_unsolve_report']. ']',
+			'text' => empty($isTopicSolved['solved']) ? $txt['cr_solve_report'] : $txt['cr_unsolve_report'],
 			'showButton' => true
 		);
 		return $data;
