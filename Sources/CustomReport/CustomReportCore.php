@@ -50,6 +50,7 @@ class CustomReportCore {
 		global $txt, $board_info, $user_info, $modSettings;
 
 		$result = $this->dbInstance->checkIsTopicSolved($topicId);
+		$original = $this->dbInstance->isOriginalTopic($topicId);
 		if(empty($result['solved'])) {
 			$subject = '[' .$txt['cr_report_solved'] . ']'. ' ' . $result['subject'];
 			$body = $txt['cr_report_solved'] . ' ' . $txt['by'] . ' ' . '\''. $user_info['name'] . '\'';
@@ -68,7 +69,23 @@ class CustomReportCore {
 				'id' => $user_info['id'],
 				'update_post_count' => !empty($modSettings['cr_enable_report_mod_count']) && $board_info['posts_count'],
 			);
-			createPost($msgOptions, $topicOptions, $posterOptions);
+
+			// If we're not in the original topic, we're in the reports board. Then, create the post here.
+			if (empty($original['id_topic'])){
+				createPost($msgOptions, $topicOptions, $posterOptions);
+			}
+
+			// We're in the original topic. Let's make the post in the reports board.
+			else {
+				$topicOptions = array(
+					'id' => $original['id_report_topic'],
+					'board' => $modSettings['cr_report_board'],
+					'lock_mode' => 1,
+					'mark_as_read' => true,
+				);
+
+				createPost($msgOptions, $topicOptions, $posterOptions);
+			}
 		} else {
 			$this->dbInstance->unlockTopic($topicId);
 		}

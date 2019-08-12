@@ -74,6 +74,26 @@ class CustomReportDB {
 		return $message;
 	}
 
+	public function isOriginalTopic($topicId){
+		global $smcFunc, $modSettings;
+
+		$request = $smcFunc['db_query']('', '
+			SELECT c.id_topic, c.id_report_topic
+			FROM {db_prefix}custom_report_mod AS c
+			INNER JOIN {db_prefix}topics AS t
+			WHERE c.id_topic = {int:current_topic} AND t.id_board != {int:reports_board} AND c.solved = 0',
+			array(
+				'current_topic' => $topicId,
+				'reports_board' => $modSettings['cr_report_board'],
+			)
+		);
+
+		$message = $smcFunc['db_fetch_assoc']($request);
+		$smcFunc['db_free_result']($request);
+
+		return $message;
+	}
+
 	public function unlockTopic($topicId) {
 		global $smcFunc;
 
