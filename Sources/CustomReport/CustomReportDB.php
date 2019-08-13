@@ -272,17 +272,15 @@ class CustomReportDB {
 		return $real_mods;
 	}
 
-	public function removeTopics($topics) {
+	public function removeTopic($topic) {
 		global $smcFunc, $modSettings;
 
-		// Remove the topics
 		$smcFunc['db_query']('', '
 			DELETE crm.* FROM {db_prefix}custom_report_mod crm
 			INNER JOIN {db_prefix}topics AS t ON (t.id_topic = crm.id_report_topic)
-			WHERE crm.id_report_topic IN ({array_int:topics})
-				AND t.id_board != {int:cr_report_board}',
+			WHERE crm.id_report_topic = {int:topic} AND t.id_board = {int:cr_report_board}',
 			array(
-				'topics' => $topics,
+				'topic' => $topic,
 				'cr_report_board' => $modSettings['cr_report_board']
 			)
 		);

@@ -380,9 +380,9 @@ class CustomReportCore {
 	}
 
 	// Remove topic from custom report table
-	public function removeTopics($topics) {
-		if(isset($topics) && !empty($topics)) {
-			$this->dbInstance->removeTopics($topics);
+	public function removeTopic($topic) {
+		if(isset($topic) && !empty($topic)) {
+			$this->dbInstance->removeTopic($topic);
 		}
 	}
 }
